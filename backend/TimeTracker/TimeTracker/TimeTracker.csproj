@@ -8,9 +8,17 @@
 
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.35" />
+        <PackageReference Include="GraphQL" Version="7.8.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6"/>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="GraphQL\Queries\" />
+      <Folder Include="GraphQL\Schema\" />
+      <Folder Include="GraphQL\Types\" />
+      <Folder Include="Repositories\Implementations\" />
     </ItemGroup>
 
 </Project>

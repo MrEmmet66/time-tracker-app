@@ -65,6 +65,7 @@ public class DataContext
                 (
                     Id INT NOT NULL,
                     Email NVARCHAR(250) NOT NULL,
+                    PasswordHash nvarchar(MAX) NOT NULL,
                     FirstName NVARCHAR(50) NOT NULL,
                     LastName NVARCHAR(50) NOT NULL,
                     Permissions NVARCHAR(MAX),
