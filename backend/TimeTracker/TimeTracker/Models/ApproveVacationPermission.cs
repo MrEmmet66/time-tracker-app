@@ -11,6 +11,6 @@ public class ApproveVacationPermission : BasePermission
     
     public override bool CanExecute(User user)
     {
-        return base.CanExecute(user) && user.Team == TargetVacation.User.Team;
+        return base.CanExecute(user) && user.Team.Name == TargetVacation.User.Team.Name;
     }
 }
