@@ -7,18 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="Dapper" Version="2.1.35" />
         <PackageReference Include="GraphQL" Version="7.8.0" />
+        <PackageReference Include="GraphQL.MicrosoftDI" Version="7.8.0" />
+        <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="7.7.1" />
+        <PackageReference Include="GraphQL.Server.Ui.Playground" Version="7.7.1" />
+        <PackageReference Include="GraphQL.SystemTextJson" Version="7.8.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6"/>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="GraphQL\Queries\" />
-      <Folder Include="GraphQL\Schema\" />
-      <Folder Include="GraphQL\Types\" />
-      <Folder Include="Repositories\Implementations\" />
     </ItemGroup>
 
 </Project>

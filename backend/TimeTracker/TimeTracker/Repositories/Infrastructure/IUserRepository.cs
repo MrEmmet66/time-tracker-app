@@ -1,6 +1,9 @@
+using TimeTracker.Models;
+
 namespace TimeTracker.Repositories.Infrastructure;
 
-public interface IUserRepository<T> : IBaseRepository<T>
+public interface IUserRepository : IBaseRepository<User>
 {
-    public Task<T> Login(string email, string password);
+    public Task<User> Login(string email, string password);
+    public Task<User> GetByEmail(string email);
 }

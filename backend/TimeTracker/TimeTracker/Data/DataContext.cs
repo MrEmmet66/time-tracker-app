@@ -33,7 +33,6 @@ public class DataContext
         {
             var connectionString =
                 $"Server={_dbSettings.Server}; Database=master; User Id={_dbSettings.UserId}; Password={_dbSettings.Password}; TrustServerCertificate=true";
-            Console.WriteLine($"Connection String to DB: {connectionString}");
             using var connection = new SqlConnection(connectionString);
             var sql =
                 $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{_dbSettings.Database}') CREATE DATABASE [{_dbSettings.Database}];";
@@ -55,7 +54,7 @@ public class DataContext
                 IF OBJECT_ID('Teams', 'U') IS NULL
                 CREATE TABLE Teams
                 (
-                    Id INT NOT NULL,
+                    Id INT NOT NULL IDENTITY(1,1),
                     Name NVARCHAR(50) NOT NULL,
                     CONSTRAINT PK_Teams PRIMARY KEY (Id)
                 );
@@ -63,8 +62,8 @@ public class DataContext
                 IF OBJECT_ID('Users', 'U') IS NULL
                 CREATE TABLE Users
                 (
-                    Id INT NOT NULL,
-                    Email NVARCHAR(250) NOT NULL,
+                    Id INT NOT NULL IDENTITY(1,1),
+                    Email NVARCHAR(250) NOT NULL UNIQUE,
                     PasswordHash nvarchar(MAX) NOT NULL,
                     FirstName NVARCHAR(50) NOT NULL,
                     LastName NVARCHAR(50) NOT NULL,
@@ -75,7 +74,7 @@ public class DataContext
                 IF OBJECT_ID('SickLeave', 'U') IS NULL
                 CREATE TABLE SickLeave
                 (
-                    Id INT NOT NULL,
+                    Id INT NOT NULL IDENTITY(1,1),
                     StartSickLeave DATETIME NOT NULL,
                     EndSickLeave DATETIME NOT NULL,
                     Reason TEXT,
@@ -96,7 +95,7 @@ public class DataContext
                 IF OBJECT_ID('Vacations', 'U') IS NULL
                 CREATE TABLE Vacations
                 (
-                    Id INT NOT NULL,
+                    Id INT NOT NULL IDENTITY(1,1),
                     StartVacation DATETIME NOT NULL,
                     EndVacation DATETIME NOT NULL,
                     UserId INT NOT NULL,
@@ -107,7 +106,7 @@ public class DataContext
                 IF OBJECT_ID('WorkEntries', 'U') IS NULL
                 CREATE TABLE WorkEntries
                 (
-                    Id INT NOT NULL,
+                    Id INT NOT NULL IDENTITY(1,1),
                     StartTime TIME(0) NOT NULL,
                     EndTime TIME(0) NOT NULL,
                     Date DATE NOT NULL,

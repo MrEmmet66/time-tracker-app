@@ -1,5 +1,11 @@
+using GraphQL;
+using GraphQL.Types;
 using TimeTracker.Configuration;
 using TimeTracker.Data;
+using TimeTracker.GraphQL.Mutations;
+using TimeTracker.GraphQL.Schema;
+using TimeTracker.Repositories.Implementations;
+using TimeTracker.Repositories.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +16,21 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<DbSettings>(builder.Configuration.GetSection("DbSettings"));
 builder.Services.AddSingleton<DataContext>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+builder.Services.AddScoped<UserMutation>();
+
+builder.Services.AddScoped<ISchema, AppSchema>();
+
+builder.Services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
+builder.Services.AddGraphQL(b => b
+    .AddSystemTextJson()
+    .AddGraphTypes(typeof(AppSchema).Assembly)
+    .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = builder.Environment.IsDevelopment())
+);
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -28,29 +49,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+app.UseGraphQL<ISchema>("/graphql");
+app.UseGraphQLPlayground();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
