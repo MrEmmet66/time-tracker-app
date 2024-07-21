@@ -43,5 +43,19 @@ public class UserMutation : ObjectGraphType
 
                     return await repository.DeleteById(userId);
                 });
+
+        Field<LoginResultType>("login")
+            .Arguments(new QueryArguments(
+                new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "email" },
+                new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "password" }
+            ))
+            .ResolveAsync(
+                async context =>
+                {
+                    var email = context.GetArgument<string>("email");
+                    var password = context.GetArgument<string>("password");
+
+                    return await repository.Login(email, password);
+                });
     }
 }

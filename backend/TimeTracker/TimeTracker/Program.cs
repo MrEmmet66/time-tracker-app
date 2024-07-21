@@ -1,9 +1,12 @@
 using GraphQL;
 using GraphQL.Types;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using TimeTracker.Configuration;
 using TimeTracker.Data;
 using TimeTracker.GraphQL.Mutations;
 using TimeTracker.GraphQL.Schema;
+using TimeTracker.Options;
 using TimeTracker.Repositories.Implementations;
 using TimeTracker.Repositories.Infrastructure;
 
@@ -31,6 +34,15 @@ builder.Services.AddGraphQL(b => b
 );
 
 builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateLifetime = true,
+        IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+        ValidateIssuerSigningKey = true,
+    };
+});
 
 var app = builder.Build();
 

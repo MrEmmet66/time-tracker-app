@@ -1,6 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text.Json;
 using Dapper;
+using Microsoft.IdentityModel.Tokens;
 using TimeTracker.Data;
 using TimeTracker.Models;
+using TimeTracker.Options;
 using TimeTracker.Repositories.Infrastructure;
 
 namespace TimeTracker.Repositories.Implementations;
@@ -60,10 +65,10 @@ public class UserRepository : IUserRepository
     {
         using var connection = _dataContext.CreateConnection();
         const string query = $"""
-                             DELETE FROM Users
-                             OUTPUT DELETED.*
-                             WHERE Id = @Id;
-                             """;
+                              DELETE FROM Users
+                              OUTPUT DELETED.*
+                              WHERE Id = @Id;
+                              """;
         var user = await connection.QuerySingleOrDefaultAsync<User>(query, new { Id = id });
 
         if (user == null) throw new Exception("This user does not exist!");
@@ -71,7 +76,7 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<User> Login(string email, string password)
+    public async Task<LoginResult> Login(string email, string password)
     {
         var candidate = await GetByEmail(email);
         var isPasswordsMatch = BCrypt.Net.BCrypt.Verify(password, candidate.PasswordHash);
@@ -79,16 +84,35 @@ public class UserRepository : IUserRepository
         if (!isPasswordsMatch)
         {
             throw new Exception("Incorrect email or password.");
-        }        
-        
-        return null;
+        }
+
+        var claims = new List<Claim>
+        {
+            new Claim("id", candidate.Id.ToString()),
+            new Claim("email", candidate.Email),
+            new Claim("firstName", candidate.FirstName),
+            new Claim("lastName", candidate.LastName),
+            new Claim("permissions", JsonSerializer.Serialize(candidate.Permissions)),
+        };
+        var jwt = new JwtSecurityToken(
+            claims: claims,
+            expires: DateTime.UtcNow.Add(TimeSpan.FromDays(30)),
+            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(),
+                SecurityAlgorithms.HmacSha256)
+        );
+
+        return new LoginResult()
+        {
+            Token = new JwtSecurityTokenHandler().WriteToken(jwt),
+            User = candidate
+        };
     }
 
     public async Task<User> GetByEmail(string email)
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Id, Email, FirstName, LastName, Permissions FROM Users
+                                 SELECT Id, Email, FirstName, LastName, Permissions, PasswordHash FROM Users
                                  WHERE Email = @Email
                                  """;
 

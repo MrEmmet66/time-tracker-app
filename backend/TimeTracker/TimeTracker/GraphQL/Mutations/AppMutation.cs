@@ -8,5 +8,6 @@ public class AppMutation : ObjectGraphType
     {
         AddField(userMutation.GetField("createUser"));
         AddField(userMutation.GetField("deleteUser"));
+        AddField(userMutation.GetField("login"));
     }
 }
