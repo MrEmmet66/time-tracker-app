@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using Dapper;
 using Microsoft.IdentityModel.Tokens;
@@ -13,10 +14,12 @@ namespace TimeTracker.Repositories.Implementations;
 public class UserRepository : IUserRepository
 {
     private readonly DataContext _dataContext;
+    private readonly JwtOptions _jwtOptions;
 
-    public UserRepository(DataContext dataContext)
+    public UserRepository(DataContext dataContext, JwtOptions jwtOptions)
     {
         _dataContext = dataContext;
+        _jwtOptions = jwtOptions;
     }
 
     public async Task<User> GetById(int id)
@@ -94,10 +97,12 @@ public class UserRepository : IUserRepository
             new Claim("lastName", candidate.LastName),
             new Claim("permissions", JsonSerializer.Serialize(candidate.Permissions)),
         };
+        var keyBytes = Encoding.UTF8.GetBytes(_jwtOptions.SigningKey);
+        var symmetricKey = new SymmetricSecurityKey(keyBytes);
         var jwt = new JwtSecurityToken(
             claims: claims,
-            expires: DateTime.UtcNow.Add(TimeSpan.FromDays(30)),
-            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(),
+            expires: DateTime.UtcNow.Add(TimeSpan.FromDays(_jwtOptions.ExpirationDays)),
+            signingCredentials: new SigningCredentials(symmetricKey,
                 SecurityAlgorithms.HmacSha256)
         );
 
