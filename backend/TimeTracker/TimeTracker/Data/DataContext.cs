@@ -15,7 +15,7 @@ public class DataContext
     {
         _dbSettings = dbSettings.Value;
         _connectionString =
-            $"Server={_dbSettings.Server}; Database={_dbSettings.Database}; User Id={_dbSettings.UserId}; Password={_dbSettings.Password}; TrustServerCertificate=true";
+            $"Server={_dbSettings.Server}; Database={_dbSettings.Database}; User Id={_dbSettings.UserId}; Trusted_Connection=True; Password={_dbSettings.Password}; TrustServerCertificate=true";
     }
 
     public IDbConnection CreateConnection()
@@ -32,7 +32,7 @@ public class DataContext
         try
         {
             var connectionString =
-                $"Server={_dbSettings.Server}; Database=master; User Id={_dbSettings.UserId}; Password={_dbSettings.Password}; TrustServerCertificate=true";
+                $"Server={_dbSettings.Server}; Database={_dbSettings.Database}; User Id={_dbSettings.UserId}; Password={_dbSettings.Password}; TrustServerCertificate=true";
             using var connection = new SqlConnection(connectionString);
             var sql =
                 $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{_dbSettings.Database}') CREATE DATABASE [{_dbSettings.Database}];";
