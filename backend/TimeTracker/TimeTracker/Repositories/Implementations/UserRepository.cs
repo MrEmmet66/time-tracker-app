@@ -5,9 +5,11 @@ using System.Text.Json;
 using Dapper;
 using Microsoft.IdentityModel.Tokens;
 using TimeTracker.Data;
+using TimeTracker.Dtos;
 using TimeTracker.Models;
 using TimeTracker.Options;
 using TimeTracker.Repositories.Infrastructure;
+using TimeTracker.Utils;
 
 namespace TimeTracker.Repositories.Implementations;
 
@@ -30,12 +32,22 @@ public class UserRepository : IUserRepository
                                  WHERE Id = @Id
                                  """;
 
-        var user = await dbConnection.QueryFirstAsync<User>(sqlQuery, new { Id = id });
+        var userDto = await dbConnection.QueryFirstAsync<UserDto>(sqlQuery, new { Id = id });
 
-        if (user == null)
+        if (userDto == null)
         {
             throw new Exception("User not found.");
         }
+
+        var permissionUtils = new PermissionUtils();
+        var user = new User()
+        {
+            Id = userDto.Id,
+            Email = userDto.Email,
+            FirstName = userDto.FirstName,
+            LastName = userDto.LastName,
+            Permissions = permissionUtils.DeserializePermissions(userDto.Permissions)
+        };
 
         return user;
     }
@@ -46,7 +58,17 @@ public class UserRepository : IUserRepository
         const string sqlQuery = $"""
                                  SELECT Id, Email, FirstName, LastName, Permissions FROM Users
                                  """;
-        var users = await dbConnection.QueryAsync<User>(sqlQuery);
+        var usersDto = await dbConnection.QueryAsync<UserDto>(sqlQuery);
+
+        var permissionUtils = new PermissionUtils();
+        var users = usersDto.Select(dto => new User
+        {
+            Id = dto.Id,
+            Email = dto.Email,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            Permissions = permissionUtils.DeserializePermissions(dto.Permissions)
+        }).ToList();
 
         return users;
     }
@@ -64,6 +86,7 @@ public class UserRepository : IUserRepository
         return await GetById(userId);
     }
 
+    // TODO need to implement the dismissal or concealment of an employee
     public async Task<User> DeleteById(int id)
     {
         using var connection = _dataContext.CreateConnection();

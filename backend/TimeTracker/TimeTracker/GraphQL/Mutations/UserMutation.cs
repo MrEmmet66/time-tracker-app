@@ -1,5 +1,7 @@
 using GraphQL;
 using GraphQL.Types;
+using TimeTracker.Constants;
+using TimeTracker.Extensions;
 using TimeTracker.GraphQL.Types;
 using TimeTracker.Models;
 using TimeTracker.Repositories.Infrastructure;
@@ -32,7 +34,7 @@ public class UserMutation : ObjectGraphType
                 };
 
                 return await repository.Create(user);
-            });
+            }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<UserType>("deleteUser")
             .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }))
@@ -42,7 +44,7 @@ public class UserMutation : ObjectGraphType
                     var userId = context.GetArgument<int>("id");
 
                     return await repository.DeleteById(userId);
-                });
+                }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<LoginResultType>("login")
             .Arguments(new QueryArguments(
@@ -57,5 +59,7 @@ public class UserMutation : ObjectGraphType
 
                     return await repository.Login(email, password);
                 });
+
+        this.AddAuthorization();
     }
 }

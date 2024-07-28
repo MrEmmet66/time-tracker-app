@@ -7,9 +7,12 @@ using TimeTracker.Configuration;
 using TimeTracker.Data;
 using TimeTracker.GraphQL.Mutations;
 using TimeTracker.GraphQL.Schema;
+using TimeTracker.Middlewares;
+using TimeTracker.Models;
 using TimeTracker.Options;
 using TimeTracker.Repositories.Implementations;
 using TimeTracker.Repositories.Infrastructure;
+using TimeTracker.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +20,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.Configure<DbSettings>(builder.Configuration.GetSection("DbSettings"));
 builder.Services.AddSingleton<DataContext>();
 
+builder.Services.AddSingleton<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<UserMutation>();
@@ -31,20 +36,28 @@ builder.Services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
 builder.Services.AddGraphQL(b => b
     .AddSystemTextJson()
     .AddGraphTypes(typeof(AppSchema).Assembly)
+    .AddUserContextBuilder(httpContext =>
+    {
+        var user = httpContext.Items["User"] as User;
+        return new Dictionary<string, object>
+        {
+            { "User", user }
+        };
+    })
     .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = builder.Environment.IsDevelopment())
 );
 
-var jwtOptions = builder.Configuration
-    .GetSection("JwtOptions")
-    .Get<JwtOptions>();
-    
+var jwtOptionsSection = builder.Configuration.GetSection("JwtOptions");
+builder.Services.Configure<JwtOptions>(jwtOptionsSection);
+var jwtOptions = jwtOptionsSection.Get<JwtOptions>();
+
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     byte[] signingKeyBytes = Encoding.UTF8
         .GetBytes(jwtOptions.SigningKey);
-    
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateLifetime = true,
@@ -73,6 +86,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseMiddleware<AuthMiddleware>();
 
 app.UseGraphQL<ISchema>("/graphql");
 app.UseGraphQLPlayground();

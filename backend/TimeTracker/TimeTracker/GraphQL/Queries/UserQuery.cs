@@ -1,5 +1,7 @@
 using GraphQL;
 using GraphQL.Types;
+using TimeTracker.Constants;
+using TimeTracker.Extensions;
 using TimeTracker.GraphQL.Types;
 using TimeTracker.Repositories.Infrastructure;
 
@@ -11,7 +13,7 @@ public class UserQuery : ObjectGraphType
     {
         Field<ListGraphType<UserType>>("users")
             .ResolveAsync(async _ => await repository.GetAll()
-            );
+            ).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<UserType>(
             "user"
@@ -22,5 +24,7 @@ public class UserQuery : ObjectGraphType
 
                 return await repository.GetById(id);
             });
+
+        this.AddAuthorization();
     }
 }
