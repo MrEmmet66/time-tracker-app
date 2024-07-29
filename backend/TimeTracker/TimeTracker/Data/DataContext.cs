@@ -114,15 +114,6 @@ public class DataContext
                     CONSTRAINT PK_WorkEntries PRIMARY KEY (Id),
                     CONSTRAINT FK_WorkEntries_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
                 );
-
-                IF OBJECT_ID('UserPermission', 'U') IS NULL
-                CREATE TABLE UserPermission
-                (
-                    UserId INT NOT NULL,
-                    PermissionName NVARCHAR(50) NOT NULL,
-                    CONSTRAINT PK_UserPermission PRIMARY KEY (UserId, PermissionName),
-                    CONSTRAINT FK_UserPermission_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
-                );
             ";
             await connection.ExecuteAsync(sql);
         }
