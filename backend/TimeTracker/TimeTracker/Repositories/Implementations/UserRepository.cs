@@ -127,7 +127,6 @@ public class UserRepository : IUserRepository
         {
             throw new Exception("User not found.");
         }
-
         return user;
     }
 }

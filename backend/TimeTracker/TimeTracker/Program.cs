@@ -7,6 +7,7 @@ using TimeTracker.Configuration;
 using TimeTracker.Data;
 using TimeTracker.GraphQL.Mutations;
 using TimeTracker.GraphQL.Schema;
+using TimeTracker.Models;
 using TimeTracker.Options;
 using TimeTracker.Repositories.Implementations;
 using TimeTracker.Repositories.Infrastructure;
@@ -40,6 +41,15 @@ var jwtOptions = builder.Configuration
     
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddAuthorization();
+
+builder.Services.AddCors(config =>
+{
+    config.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
+    });
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     byte[] signingKeyBytes = Encoding.UTF8
@@ -53,6 +63,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidAudience = jwtOptions.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(signingKeyBytes),
     };
+});
+
+builder.Services.AddAutoMapper(config =>
+{
+    config.CreateMap<BasePermission, string>().ReverseMap();
 });
 
 var app = builder.Build();
@@ -71,6 +86,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthorization();
 
