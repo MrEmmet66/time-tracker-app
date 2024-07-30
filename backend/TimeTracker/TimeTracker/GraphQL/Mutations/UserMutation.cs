@@ -36,14 +36,18 @@ public class UserMutation : ObjectGraphType
                 return await repository.Create(user);
             }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
-        Field<UserType>("deleteUser")
-            .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }))
+        Field<UserType>("setUserStatus")
+            .Arguments(new QueryArguments(
+                new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" },
+                new QueryArgument<NonNullGraphType<BooleanGraphType>> { Name = "isActive" }
+            ))
             .ResolveAsync(
                 async context =>
                 {
                     var userId = context.GetArgument<int>("id");
+                    var isActive = context.GetArgument<bool>("isActive");
 
-                    return await repository.DeleteById(userId);
+                    return await repository.SetUserStatus(userId, isActive);
                 }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<LoginResultType>("login")
@@ -59,6 +63,20 @@ public class UserMutation : ObjectGraphType
 
                     return await repository.Login(email, password);
                 });
+
+        Field<UserType>("updatePermissions")
+            .Arguments(new QueryArguments(
+                new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" },
+                new QueryArgument<NonNullGraphType<ListGraphType<StringGraphType>>> { Name = "permissions" }
+            ))
+            .ResolveAsync(
+                async context =>
+                {
+                    var userId = context.GetArgument<int>("id");
+                    var permissions = context.GetArgument<string[]>("permissions");
+
+                    return await repository.UpdatePermissions(userId, permissions);
+                }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         this.AddAuthorization();
     }

@@ -114,6 +114,18 @@ public class DataContext
                     CONSTRAINT PK_WorkEntries PRIMARY KEY (Id),
                     CONSTRAINT FK_WorkEntries_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
                 );
+
+                IF NOT EXISTS (
+                    SELECT * 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_NAME = 'Users' 
+                    AND COLUMN_NAME = 'IsActive'
+                )
+                BEGIN
+                    ALTER TABLE Users
+                    ADD IsActive BIT NOT NULL DEFAULT 1;
+                END
+
             ";
             await connection.ExecuteAsync(sql);
         }
