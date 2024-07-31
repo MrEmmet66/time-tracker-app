@@ -79,6 +79,15 @@ public class UserRepository : IUserRepository
     public async Task<User> Create(User user)
     {
         using var dbConnection = _dataContext.CreateConnection();
+        const string checkEmailQuery = $"""
+                                        SELECT COUNT(*) FROM Users WHERE Email = @Email
+                                        """;
+        var count = await dbConnection.ExecuteScalarAsync<int>(checkEmailQuery, new { user.Email });
+        if (count > 0)
+        {
+            throw new InvalidOperationException("User with this email already exists.");
+        }
+        
         const string sqlQuery = $"""
                                  INSERT INTO Users (Email, PasswordHash, FirstName, LastName)
                                  OUTPUT INSERTED.Id
