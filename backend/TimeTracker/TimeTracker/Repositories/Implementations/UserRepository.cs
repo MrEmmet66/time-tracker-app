@@ -33,11 +33,11 @@ public class UserRepository : IUserRepository
                                  WHERE Id = @Id
                                  """;
 
-        var userDto = await dbConnection.QueryFirstAsync<UserDto>(sqlQuery, new { Id = id });
+        var userDto = await dbConnection.QueryFirstOrDefaultAsync<UserDto>(sqlQuery, new { Id = id });
 
         if (userDto == null)
         {
-            throw new Exception("User not found.");
+            throw new KeyNotFoundException("User not found.");
         }
 
         var permissionUtils = new PermissionUtils();
@@ -101,9 +101,9 @@ public class UserRepository : IUserRepository
 
         if (!isPasswordsMatch)
         {
-            throw new Exception("Incorrect email or password.");
+            throw new BadHttpRequestException("Incorrect email or password.");
         }
-
+        
         var claims = new List<Claim>
         {
             new Claim("id", candidate.Id.ToString()),
@@ -136,12 +136,24 @@ public class UserRepository : IUserRepository
                                  WHERE Email = @Email
                                  """;
 
-        var user = await dbConnection.QueryFirstAsync<User>(sqlQuery, new { Email = email });
+        var userDto = await dbConnection.QueryFirstOrDefaultAsync<UserDto>(sqlQuery, new { Email = email });
 
-        if (user == null)
+        if (userDto == null)
         {
-            throw new Exception("User not found.");
+            throw new KeyNotFoundException("User not found.");
         }
+
+        var permissionUtils = new PermissionUtils();
+        var user = new User()
+        {
+            Id = userDto.Id,
+            Email = userDto.Email,
+            FirstName = userDto.FirstName,
+            LastName = userDto.LastName,
+            IsActive = userDto.IsActive,
+            PasswordHash = userDto.PasswordHash,
+            Permissions = permissionUtils.DeserializePermissions(userDto.Permissions)
+        };
 
         return user;
     }
