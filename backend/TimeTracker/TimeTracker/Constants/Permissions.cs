@@ -10,5 +10,5 @@ public static class Permissions
     public const string GenerateReports = "generate_reports";
     public const string GenerateAllReports = "generate_all_reports";
     public const string ViewAllTimeEntries = "view_all_time_entries";
-    public const string ViewTeamTimeEntries = "view_team_time_entries";
+    public const string ViewTeamTimeEntries = "view_team_time_entries" ;
 }
