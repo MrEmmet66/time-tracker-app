@@ -55,7 +55,7 @@ public class DataContext
                 CREATE TABLE Teams
                 (
                     Id INT NOT NULL IDENTITY(1,1),
-                    Name NVARCHAR(50) NOT NULL,
+                    Name NVARCHAR(50) NOT NULL UNIQUE,
                     CONSTRAINT PK_Teams PRIMARY KEY (Id)
                 );
 
@@ -126,6 +126,27 @@ public class DataContext
                     ADD IsActive BIT NOT NULL DEFAULT 1;
                 END
 
+                IF NOT EXISTS (
+                    SELECT * 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_NAME = 'Teams' 
+                    AND COLUMN_NAME = 'IsActive'
+                )
+                BEGIN
+                    ALTER TABLE Teams
+                    ADD IsActive BIT NOT NULL DEFAULT 1;
+                END
+
+                IF NOT EXISTS (
+                    SELECT * 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_NAME = 'TeamUser' 
+                    AND COLUMN_NAME = 'IsActive'
+                )
+                BEGIN
+                    ALTER TABLE TeamUser
+                    ADD IsActive BIT NOT NULL DEFAULT 1;
+                END
             ";
             await connection.ExecuteAsync(sql);
         }

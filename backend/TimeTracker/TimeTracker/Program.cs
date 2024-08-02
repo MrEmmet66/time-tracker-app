@@ -27,8 +27,10 @@ builder.Services.AddSingleton<DataContext>();
 
 builder.Services.AddSingleton<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 
 builder.Services.AddScoped<UserMutation>();
+builder.Services.AddScoped<TeamMutation>();
 
 builder.Services.AddScoped<ISchema, AppSchema>();
 
