@@ -5,9 +5,12 @@ using System.Text.Json;
 using Dapper;
 using Microsoft.IdentityModel.Tokens;
 using TimeTracker.Data;
+using TimeTracker.Dtos;
+using TimeTracker.Factories;
 using TimeTracker.Models;
 using TimeTracker.Options;
 using TimeTracker.Repositories.Infrastructure;
+using TimeTracker.Utils;
 
 namespace TimeTracker.Repositories.Implementations;
 
@@ -26,16 +29,27 @@ public class UserRepository : IUserRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Id, Email, FirstName, LastName, Permissions FROM Users
+                                 SELECT Id, Email, FirstName, LastName, Permissions, IsActive FROM Users
                                  WHERE Id = @Id
                                  """;
 
-        var user = await dbConnection.QueryFirstAsync<User>(sqlQuery, new { Id = id });
+        var userDto = await dbConnection.QueryFirstOrDefaultAsync<UserDto>(sqlQuery, new { Id = id });
 
-        if (user == null)
+        if (userDto == null)
         {
-            throw new Exception("User not found.");
+            throw new KeyNotFoundException("User not found.");
         }
+
+        var permissionUtils = new PermissionUtils();
+        var user = new User()
+        {
+            Id = userDto.Id,
+            Email = userDto.Email,
+            FirstName = userDto.FirstName,
+            LastName = userDto.LastName,
+            IsActive = userDto.IsActive,
+            Permissions = permissionUtils.DeserializePermissions(userDto.Permissions)
+        };
 
         return user;
     }
@@ -44,9 +58,20 @@ public class UserRepository : IUserRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Id, Email, FirstName, LastName, Permissions FROM Users
+                                 SELECT Id, Email, FirstName, LastName, Permissions, IsActive FROM Users
                                  """;
-        var users = await dbConnection.QueryAsync<User>(sqlQuery);
+        var usersDto = await dbConnection.QueryAsync<UserDto>(sqlQuery);
+
+        var permissionUtils = new PermissionUtils();
+        var users = usersDto.Select(dto => new User
+        {
+            Id = dto.Id,
+            Email = dto.Email,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            IsActive = dto.IsActive,
+            Permissions = permissionUtils.DeserializePermissions(dto.Permissions)
+        }).ToList();
 
         return users;
     }
@@ -54,6 +79,15 @@ public class UserRepository : IUserRepository
     public async Task<User> Create(User user)
     {
         using var dbConnection = _dataContext.CreateConnection();
+        const string checkEmailQuery = $"""
+                                        SELECT COUNT(*) FROM Users WHERE Email = @Email
+                                        """;
+        var count = await dbConnection.ExecuteScalarAsync<int>(checkEmailQuery, new { user.Email });
+        if (count > 0)
+        {
+            throw new InvalidOperationException("User with this email already exists.");
+        }
+        
         const string sqlQuery = $"""
                                  INSERT INTO Users (Email, PasswordHash, FirstName, LastName)
                                  OUTPUT INSERTED.Id
@@ -64,19 +98,9 @@ public class UserRepository : IUserRepository
         return await GetById(userId);
     }
 
-    public async Task<User> DeleteById(int id)
+    public Task<User> DeleteById(int id)
     {
-        using var connection = _dataContext.CreateConnection();
-        const string query = $"""
-                              DELETE FROM Users
-                              OUTPUT DELETED.*
-                              WHERE Id = @Id;
-                              """;
-        var user = await connection.QuerySingleOrDefaultAsync<User>(query, new { Id = id });
-
-        if (user == null) throw new Exception("This user does not exist!");
-
-        return user;
+        throw new NotImplementedException("Method not implemented for UserRepository.");
     }
 
     public async Task<LoginResult> Login(string email, string password)
@@ -86,9 +110,9 @@ public class UserRepository : IUserRepository
 
         if (!isPasswordsMatch)
         {
-            throw new Exception("Incorrect email or password.");
+            throw new BadHttpRequestException("Incorrect email or password.");
         }
-
+        
         var claims = new List<Claim>
         {
             new Claim("id", candidate.Id.ToString()),
@@ -117,16 +141,72 @@ public class UserRepository : IUserRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Id, Email, FirstName, LastName, Permissions, PasswordHash FROM Users
+                                 SELECT Id, Email, FirstName, LastName, Permissions, PasswordHash, IsActive FROM Users
                                  WHERE Email = @Email
                                  """;
 
-        var user = await dbConnection.QueryFirstAsync<User>(sqlQuery, new { Email = email });
+        var userDto = await dbConnection.QueryFirstOrDefaultAsync<UserDto>(sqlQuery, new { Email = email });
 
-        if (user == null)
+        if (userDto == null)
         {
-            throw new Exception("User not found.");
+            throw new KeyNotFoundException("User not found.");
         }
+
+        var permissionUtils = new PermissionUtils();
+        var user = new User()
+        {
+            Id = userDto.Id,
+            Email = userDto.Email,
+            FirstName = userDto.FirstName,
+            LastName = userDto.LastName,
+            IsActive = userDto.IsActive,
+            PasswordHash = userDto.PasswordHash,
+            Permissions = permissionUtils.DeserializePermissions(userDto.Permissions)
+        };
+
         return user;
+    }
+
+    public async Task<User> UpdatePermissions(int userId, string[] permissions)
+    {
+        using var dbConnection = _dataContext.CreateConnection();
+        var user = await GetById(userId);
+        var permissionUtils = new PermissionUtils();
+        const string sqlQuery = $"""
+                                 UPDATE Users
+                                 SET Permissions=@Permissions
+                                 WHERE Id = @Id
+                                 """;
+
+        user.Permissions.Clear();
+        var uniquePermissions = permissions.Distinct();
+        var newPermissions = uniquePermissions.Select(PermissionFactory.Create);
+        user.Permissions.AddRange(newPermissions);
+
+        await dbConnection.ExecuteAsync(sqlQuery, new
+        {
+            Id = user.Id,
+            Permissions = permissionUtils.SerializePermissions(user.Permissions)
+        });
+
+        return user;
+    }
+
+    public async Task<User> SetUserStatus(int userId, bool isActive)
+    {
+        using var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 UPDATE Users
+                                 SET IsActive=@IsActive
+                                 WHERE Id=@id 
+                                 """;
+
+        await dbConnection.ExecuteAsync(sqlQuery, new
+        {
+            Id = userId,
+            isActive = isActive
+        });
+
+        return await GetById(userId);
     }
 }
