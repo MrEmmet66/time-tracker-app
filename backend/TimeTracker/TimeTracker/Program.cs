@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TimeTracker.Configuration;
 using TimeTracker.Data;
-using TimeTracker.GraphQL.Mutations;
 using TimeTracker.GraphQL.Schema;
 using TimeTracker.Middlewares;
 using TimeTracker.Models;
@@ -28,9 +27,7 @@ builder.Services.AddSingleton<DataContext>();
 builder.Services.AddSingleton<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
-
-builder.Services.AddScoped<UserMutation>();
-builder.Services.AddScoped<TeamMutation>();
+builder.Services.AddScoped<IWorkEntryRepository, WorkEntryRepository>();
 
 builder.Services.AddScoped<ISchema, AppSchema>();
 

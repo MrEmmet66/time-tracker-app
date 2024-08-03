@@ -147,6 +147,26 @@ public class DataContext
                     ALTER TABLE TeamUser
                     ADD IsActive BIT NOT NULL DEFAULT 1;
                 END
+
+                IF EXISTS (
+                    SELECT * 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_NAME = 'WorkEntries' 
+                    AND COLUMN_NAME = 'Date'
+                )
+                BEGIN
+                    ALTER TABLE WorkEntries
+                    DROP COLUMN Date;
+
+                    EXEC sp_rename 'WorkEntries.StartTime', 'StartDateTime', 'COLUMN';
+                    EXEC sp_rename 'WorkEntries.EndTime', 'EndDateTime', 'COLUMN';
+
+                    ALTER TABLE WorkEntries
+                    ALTER COLUMN StartDateTime DATETIME NOT NULL;
+                    
+                    ALTER TABLE WorkEntries
+                    ALTER COLUMN EndDateTime DATETIME NOT NULL;
+                END
             ";
             await connection.ExecuteAsync(sql);
         }
