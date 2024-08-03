@@ -4,7 +4,7 @@ namespace TimeTracker.GraphQL.Mutations;
 
 public class AppMutation : ObjectGraphType
 {
-    public AppMutation(UserMutation userMutation, TeamMutation teamMutation)
+    public AppMutation(UserMutation userMutation, TeamMutation teamMutation, WorkEntryMutation workEntryMutation)
     {
         AddField(userMutation.GetField("createUser"));
         AddField(userMutation.GetField("setUserStatus"));
@@ -14,5 +14,7 @@ public class AppMutation : ObjectGraphType
         AddField(teamMutation.GetField("createTeam"));
         AddField(teamMutation.GetField("addUserToTeam"));
         AddField(teamMutation.GetField("removeUserFromTeam"));
+        
+        AddField(workEntryMutation.GetField("createWorkEntry"));
     }
 }
