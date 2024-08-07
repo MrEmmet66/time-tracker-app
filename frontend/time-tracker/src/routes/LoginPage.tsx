@@ -2,15 +2,15 @@ import LoginForm from "../components/LoginForm.tsx";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
+import {RootState} from "../redux/store.ts";
 
 function LoginPage() {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const authState = useSelector((state) => state)
+    const authState = useSelector((state: RootState) => state.auth)
 
 
     const onSubmit = ({email, password}) => {
-        console.log('sraka')
         dispatch({type: 'LOGIN', payload: {email, password}})
     }
 

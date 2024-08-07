@@ -30,18 +30,25 @@ const authSlice = createSlice({
         },
         setAuthStateFromToken: (state, action: PayloadAction<string>) => {
             const decodedToken: any = jwtDecode(action.payload);
-            console.log(decodedToken)
-            state.user = {
-                id: decodedToken.id,
-                firstName: decodedToken.firstName,
-                lastName: decodedToken.lastName,
-                email: decodedToken.email,
-                permissions: decodedToken.permissions
-            };
-            state.jwtToken = action.payload;
-            state.error = null;
-        }
+            const currentTime = Date.now() / 1000;
 
+            if (decodedToken.exp < currentTime) {
+                state.user = null;
+                state.jwtToken = null;
+                state.error = "Token expired";
+                localStorage.removeItem('jwtToken');
+            } else {
+                state.user = {
+                    id: decodedToken.id,
+                    firstName: decodedToken.firstName,
+                    lastName: decodedToken.lastName,
+                    email: decodedToken.email,
+                    permissions: decodedToken.permissions
+                };
+                state.jwtToken = action.payload;
+                state.error = null;
+            }
+        }
     }
 })
 

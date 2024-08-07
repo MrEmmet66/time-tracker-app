@@ -1,6 +1,6 @@
 import config from "./config.ts";
 
-export const fetchGraphQl = async (body: { query: string; variables: { email: any; password: any; }; }) => {
+export const fetchGraphQl = async (body: { query: string; }) => {
     const response = await fetch(config.API_ENDPOINT, {
         method: 'POST',
         headers: {

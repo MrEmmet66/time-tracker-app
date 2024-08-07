@@ -2,10 +2,11 @@ import {useSelector} from "react-redux";
 import {RootState} from "../redux/store.ts";
 
 function Index() {
-    const authState = useSelector((state: RootState) => state.user)
+    const authState = useSelector((state: RootState) => state.auth.user)
     return (
         <div>
             <p>{authState ? `User: ${authState.email}` : 'Not logged in'}</p>
+
         </div>
     );
 }

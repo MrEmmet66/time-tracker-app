@@ -6,6 +6,7 @@ import LoginPage from "./routes/LoginPage.tsx";
 import {useEffect} from "react";
 import {useDispatch} from "react-redux";
 import {setAuthStateFromToken} from "./redux/features/authSlice.ts";
+import UsersPage from "./routes/users/UsersPage.tsx";
 
 function App() {
     const dispatch = useDispatch();
@@ -25,6 +26,7 @@ function App() {
               <Routes>
                   <Route path='/' element={<Index/>}/>
                   <Route path='/login' element={<LoginPage/>}/>
+                  <Route path='/users' element={<UsersPage/>}/>
               </Routes>
           </Layout>
       </BrowserRouter>

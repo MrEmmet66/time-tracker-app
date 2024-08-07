@@ -16,7 +16,9 @@ const login = (action$) =>
                               email
                               firstName
                               lastName
-                              permissions
+                              permissions {
+                                name
+                               }
                             }
                           }
                         }`,
