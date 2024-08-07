@@ -20,9 +20,23 @@ public class UserQuery : ObjectGraphType
         ).Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" })).ResolveAsync(
             async context =>
             {
-                var id = context.GetArgument<int>("id");
+                try
+                {
+                    var id = context.GetArgument<int>("id");
 
-                return await repository.GetById(id);
+                    return await repository.GetById(id);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    context.Errors.Add(new ExecutionError(ex.Message));
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                    return null;
+                }
             });
 
         this.AddAuthorization();

@@ -83,7 +83,7 @@ public class TeamRepository : ITeamRepository
 
         if (isExistTeamName)
         {
-            throw new Exception("A team with this name already exists");
+            throw new ArgumentException("A team with this name already exists");
         }
 
         var dbConnection = _dataContext.CreateConnection();

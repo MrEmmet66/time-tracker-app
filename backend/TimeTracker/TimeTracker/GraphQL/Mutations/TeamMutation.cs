@@ -17,14 +17,28 @@ public class TeamMutation : ObjectGraphType
             ))
             .ResolveAsync(async context =>
             {
-                var teamName = context.GetArgument<string>("name");
-
-                var team = new Team()
+                try
                 {
-                    Name = teamName,
-                };
+                    var teamName = context.GetArgument<string>("name");
 
-                return await repository.Create(team);
+                    var team = new Team()
+                    {
+                        Name = teamName,
+                    };
+
+                    return await repository.Create(team);
+                }
+                catch (ArgumentException ex)
+                {
+                    context.Errors.Add(new ExecutionError(ex.Message));
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                    return null;
+                }
             }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<TeamType>("addUserToTeam").Arguments(new QueryArguments(
@@ -33,12 +47,21 @@ public class TeamMutation : ObjectGraphType
             ))
             .ResolveAsync(async context =>
             {
-                var teamId = context.GetArgument<int>("teamId");
-                var userId = context.GetArgument<int>("userId");
-                var team = await repository.GetById(teamId);
-                var user = await userRepository.GetById(userId);
+                try
+                {
+                    var teamId = context.GetArgument<int>("teamId");
+                    var userId = context.GetArgument<int>("userId");
+                    var team = await repository.GetById(teamId);
+                    var user = await userRepository.GetById(userId);
 
-                return await repository.AddUserToTeam(team, user);
+                    return await repository.AddUserToTeam(team, user);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                    return null;
+                }
             }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<TeamType>("removeUserFromTeam").Arguments(new QueryArguments(
@@ -47,12 +70,21 @@ public class TeamMutation : ObjectGraphType
             ))
             .ResolveAsync(async context =>
             {
-                var teamId = context.GetArgument<int>("teamId");
-                var userId = context.GetArgument<int>("userId");
-                var team = await repository.GetById(teamId);
-                var user = await userRepository.GetById(userId);
+                try
+                {
+                    var teamId = context.GetArgument<int>("teamId");
+                    var userId = context.GetArgument<int>("userId");
+                    var team = await repository.GetById(teamId);
+                    var user = await userRepository.GetById(userId);
 
-                return await repository.RemoveUserFromTeam(team, user);
+                    return await repository.RemoveUserFromTeam(team, user);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                    return null;
+                }
             }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         this.AddAuthorization();

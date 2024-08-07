@@ -18,23 +18,32 @@ public class WorkEntryMutation : ObjectGraphType
             ))
             .ResolveAsync(async context =>
             {
-                var startDateTime = context.GetArgument<DateTime>("startDateTime");
-                var endDateTime = context.GetArgument<DateTime>("endDateTime");
-                var user = context.UserContext["User"] as User;
-                
-                if (user == null)
+                try
                 {
-                    throw new AuthenticationException("");
-                }
-                
-                var workEntry = new WorkEntry()
-                {
-                    StartDateTime = startDateTime,
-                    EndDateTime = endDateTime,
-                    User = user
-                };
+                    var startDateTime = context.GetArgument<DateTime>("startDateTime");
+                    var endDateTime = context.GetArgument<DateTime>("endDateTime");
+                    var user = context.UserContext["User"] as User;
 
-                return await repository.Create(workEntry);
+                    if (user == null)
+                    {
+                        throw new AuthenticationException("");
+                    }
+
+                    var workEntry = new WorkEntry()
+                    {
+                        StartDateTime = startDateTime,
+                        EndDateTime = endDateTime,
+                        User = user
+                    };
+
+                    return await repository.Create(workEntry);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                    return null;
+                }
             });
 
         this.AddAuthorization();

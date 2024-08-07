@@ -19,21 +19,35 @@ public class UserMutation : ObjectGraphType
                 new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "lastName" }))
             .ResolveAsync(async context =>
             {
-                var email = context.GetArgument<string>("email");
-                var password = context.GetArgument<string>("password");
-                var firstName = context.GetArgument<string>("firstName");
-                var lastName = context.GetArgument<string>("lastName");
-                var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
-
-                var user = new User()
+                try
                 {
-                    Email = email,
-                    PasswordHash = passwordHash,
-                    FirstName = firstName,
-                    LastName = lastName
-                };
+                    var email = context.GetArgument<string>("email");
+                    var password = context.GetArgument<string>("password");
+                    var firstName = context.GetArgument<string>("firstName");
+                    var lastName = context.GetArgument<string>("lastName");
+                    var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
 
-                return await repository.Create(user);
+                    var user = new User()
+                    {
+                        Email = email,
+                        PasswordHash = passwordHash,
+                        FirstName = firstName,
+                        LastName = lastName
+                    };
+
+                    return await repository.Create(user);
+                }
+                catch (ArgumentException ex)
+                {
+                    context.Errors.Add(new ExecutionError(ex.Message));
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                    return null;
+                }
             }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<UserType>("setUserStatus")
@@ -44,10 +58,24 @@ public class UserMutation : ObjectGraphType
             .ResolveAsync(
                 async context =>
                 {
-                    var userId = context.GetArgument<int>("id");
-                    var isActive = context.GetArgument<bool>("isActive");
+                    try
+                    {
+                        var userId = context.GetArgument<int>("id");
+                        var isActive = context.GetArgument<bool>("isActive");
 
-                    return await repository.SetUserStatus(userId, isActive);
+                        return await repository.SetUserStatus(userId, isActive);
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        context.Errors.Add(new ExecutionError(ex.Message));
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                        return null;
+                    }
                 }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<LoginResultType>("login")
@@ -58,10 +86,30 @@ public class UserMutation : ObjectGraphType
             .ResolveAsync(
                 async context =>
                 {
-                    var email = context.GetArgument<string>("email");
-                    var password = context.GetArgument<string>("password");
+                    try
+                    {
+                        var email = context.GetArgument<string>("email");
+                        var password = context.GetArgument<string>("password");
 
-                    return await repository.Login(email, password);
+                        return await repository.Login(email, password);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        context.Errors.Add(new ExecutionError(ex.Message));
+                        return null;
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        context.Errors.Add(new ExecutionError(ex.Message));
+                        return null;
+                    }
+
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                        return null;
+                    }
                 });
 
         Field<UserType>("updatePermissions")
@@ -72,10 +120,24 @@ public class UserMutation : ObjectGraphType
             .ResolveAsync(
                 async context =>
                 {
-                    var userId = context.GetArgument<int>("id");
-                    var permissions = context.GetArgument<string[]>("permissions");
+                    try
+                    {
+                        var userId = context.GetArgument<int>("id");
+                        var permissions = context.GetArgument<string[]>("permissions");
 
-                    return await repository.UpdatePermissions(userId, permissions);
+                        return await repository.UpdatePermissions(userId, permissions);
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        context.Errors.Add(new ExecutionError(ex.Message));
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                        return null;
+                    }
                 }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         this.AddAuthorization();

@@ -20,9 +20,23 @@ public class WorkEntryQuery : ObjectGraphType
         ).Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" })).ResolveAsync(
             async context =>
             {
-                var id = context.GetArgument<int>("id");
+                try
+                {
+                    var id = context.GetArgument<int>("id");
 
-                return await repository.GetById(id);
+                    return await repository.GetById(id);
+                }
+                catch (ArgumentException ex)
+                {
+                    context.Errors.Add(new ExecutionError(ex.Message));
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                    return null;
+                }
             });
 
         Field<ListGraphType<WorkEntryType>>(
@@ -31,9 +45,18 @@ public class WorkEntryQuery : ObjectGraphType
             .ResolveAsync(
                 async context =>
                 {
-                    var userId = context.GetArgument<int>("userId");
+                    try
+                    {
+                        var userId = context.GetArgument<int>("userId");
 
-                    return await repository.GetByUserId(userId);
+                        return await repository.GetByUserId(userId);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                        return null;
+                    }
                 });
 
         Field<ListGraphType<WorkEntryType>>(
@@ -42,9 +65,18 @@ public class WorkEntryQuery : ObjectGraphType
             .ResolveAsync(
                 async context =>
                 {
-                    var date = context.GetArgument<DateTime>("date");
+                    try
+                    {
+                        var date = context.GetArgument<DateTime>("date");
 
-                    return await repository.GetByDate(date);
+                        return await repository.GetByDate(date);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                        return null;
+                    }
                 });
 
         this.AddAuthorization();
