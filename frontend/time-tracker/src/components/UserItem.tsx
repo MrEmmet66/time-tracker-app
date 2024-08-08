@@ -41,7 +41,7 @@ const UserItem: React.FC<UserItemProps> = ({ user }) => {
             <Card
                 title={`${user.firstName} ${user.lastName}`}
                 extra={
-                    <Dropdown overlay={menu} trigger={['click']}>
+                    <Dropdown menu={menu} trigger={['click']}>
                         <Button icon={<EllipsisOutlined />} />
                     </Dropdown>
                 }

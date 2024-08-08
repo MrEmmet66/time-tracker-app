@@ -38,6 +38,7 @@ const getUsers = (action$) =>
         fetchGraphQl({
             query: `query {
               users {
+                id
                 email
                 firstName
                 lastName

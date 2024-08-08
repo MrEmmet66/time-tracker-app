@@ -12,7 +12,7 @@ function UsersPage() {
 
     useEffect(() => {
         dispatch({type: 'GET_ALL_USERS'});
-    }, []);
+    }, [dispatch]);
 
     const handleCreateUser = (values: any) => {
         dispatch({type: 'CREATE_USER', payload: values});
@@ -25,12 +25,12 @@ function UsersPage() {
             >
                 Create User
             </Button>
-            <UsersList users={users} />
             <CreateUserModal
                 visible={isModalVisible}
                 onCreate={handleCreateUser}
                 onCancel={() => setIsModalVisible(false)}
             />
+            <UsersList users={users} />
         </>
     );
 }

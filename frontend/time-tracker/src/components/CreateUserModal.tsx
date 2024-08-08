@@ -24,7 +24,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({visible, onCreate, onC
     }
 
     return (
-        <Modal visible={visible}
+        <Modal open={visible}
             title='Create a new user'
             okText='Create'
             cancelText='Cancel'

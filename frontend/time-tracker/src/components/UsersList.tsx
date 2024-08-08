@@ -7,12 +7,16 @@ interface UsersListProps {
 }
 
 const UsersList: React.FC<UsersListProps> = ({ users }) => {
+    if (!users || users.length === 0) {
+        return <p></p>;
+    }
+    console.log(users)
     return (
-        <div>
+        <>
             {users.map(user => (
-                <UserItem key={user.id} user={user} />
+                <UserItem key={user.id.toString()} user={user} />
             ))}
-        </div>
+        </>
     );
 }
 
