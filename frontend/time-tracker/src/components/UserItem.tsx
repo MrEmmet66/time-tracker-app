@@ -49,7 +49,6 @@ const UserItem: React.FC<UserItemProps> = ({ user }) => {
                 <p>Email: {user.email}</p>
                 <p>First Name: {user.firstName}</p>
                 <p>Last Name: {user.lastName}</p>
-                <p>Permissions: {user.permissions}</p>
             </Card>
             <UserPermissionsModal
                 visible={isModalVisible}
