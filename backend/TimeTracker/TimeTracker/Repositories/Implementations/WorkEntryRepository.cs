@@ -67,7 +67,8 @@ public class WorkEntryRepository : IWorkEntryRepository
         const string sqlQuery = $"""
                                  SELECT workEntry.*, us.Id AS UserId, us.Email, us.FirstName, us.LastName, us.IsActive, us.Permissions 
                                  FROM WorkEntries workEntry
-                                 JOIN Users us ON workEntry.UserId = us.Id         
+                                 JOIN Users us ON workEntry.UserId = us.Id
+                                 ORDER BY workEntry.StartDateTime DESC
                                  """;
 
         var permissionUtils = new PermissionUtils();
@@ -103,7 +104,7 @@ public class WorkEntryRepository : IWorkEntryRepository
                                  OUTPUT INSERTED.Id
                                  VALUES (@StartDateTime, @EndDateTime, @UserId)
                                  """;
-        
+
         var workEntryId = await dbConnection.ExecuteAsync(sqlQuery, new
         {
             StartDateTime = obj.StartDateTime,
@@ -125,6 +126,7 @@ public class WorkEntryRepository : IWorkEntryRepository
         const string sqlQuery = $"""
                                  SELECT * FROM WorkEntries
                                  WHERE UserId=@UserId
+                                 ORDER BY StartDateTime DESC
                                  """;
 
         var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { UserId = userId });
@@ -138,9 +140,24 @@ public class WorkEntryRepository : IWorkEntryRepository
         const string sqlQuery = $"""
                                  SELECT * FROM WorkEntries
                                  WHERE CAST(StartDateTime AS DATE)=CAST(@Date AS DATE)
+                                 ORDER BY StartDateTime DESC
                                  """;
 
         var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { Date = date });
+
+        return workEntries;
+    }
+
+    public async Task<IEnumerable<WorkEntry>> GetByDate(DateTime date, int userId)
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 SELECT * FROM WorkEntries
+                                 WHERE CAST(StartDateTime AS DATE)=CAST(@Date AS DATE) AND UserId=@UserId
+                                 ORDER BY StartDateTime DESC
+                                 """;
+
+        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { Date = date, UserId = userId });
 
         return workEntries;
     }

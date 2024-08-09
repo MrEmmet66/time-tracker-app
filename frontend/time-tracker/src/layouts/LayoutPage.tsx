@@ -1,7 +1,10 @@
 import React from "react";
 import {Layout} from "antd";
+import {useSelector} from "react-redux";
 
 import Header from "../components/headers/Header";
+import {RootState} from "../redux/store";
+import Sidebar from "../components/sidebar/Sidebar";
 
 interface IProps {
     children: React.ReactNode;
@@ -10,10 +13,15 @@ interface IProps {
 const {Content} = Layout;
 
 const LayoutPage = ({children}: IProps) => {
+    const user = useSelector((state: RootState) => state.auth.user);
+
     return (
         <Layout>
-            <Header/>
-            <Content className="my-20 mx-12">{children}</Content>
+            <Sidebar/>
+            <Layout>
+                <Header user={user}/>
+                <Content className="my-20 mx-12">{children}</Content>
+            </Layout>
         </Layout>
     );
 };

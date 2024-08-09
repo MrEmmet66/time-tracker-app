@@ -1,9 +1,15 @@
 import config from "../config/config.ts";
+import {IAuthUser} from "../models/user.ts";
+import {IWorkEntryCreate} from "../models/work-entry.ts";
 import {getToken} from "./token.ts";
 
 export const fetchGraphQl = async (body: {
     query: string;
-    variables: { email: string; password: string };
+    variables?:
+        | IAuthUser
+        | IWorkEntryCreate
+        | { userId: number }
+        | { date: string, userId?: number };
 }) => {
     const response = await fetch(config.API_ENDPOINT, {
         method: "POST",
