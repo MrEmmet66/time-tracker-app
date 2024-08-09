@@ -1,7 +1,13 @@
 import {combineEpics, ofType} from "redux-observable";
 import {catchError, map, of, switchMap} from "rxjs";
 import {fetchGraphQl} from "../../utils/apiActions.ts";
-import {createUserError, createUserSuccess, getUsersByIdSuccess, getUsersSuccess} from "../features/usersSlice.ts";
+import {
+    createUserError,
+    createUserSuccess,
+    getUsersByIdSuccess,
+    getUsersSuccess, updatePermissionsError,
+    updatePermissionsSuccess
+} from "../features/usersSlice.ts";
 
 const createUser = (action$) =>
     action$.pipe(
@@ -73,4 +79,25 @@ const getUserById = (action$) =>
 .pipe(map((response) => getUsersByIdSuccess(response.data)),
     catchError((error) => of(createUserError(error.message))))
 
-export default combineEpics(createUser, getUsers, getUserById)
+const updatePermissions = (action$) =>
+    action$.pipe(
+        ofType('UPDATE_PERMISSIONS'),
+        switchMap((action) =>
+        fetchGraphQl({
+            query:`mutation UpdatePermissions($id:ID! $permissions:[String]!) {
+              updatePermissions(id:$id permissions:$permissions) {
+                id
+                permissions {
+                  name
+                }
+              }
+            }`,
+            variables: {
+                id: action.payload.id,
+                permissions: action.payload.permissions
+            }
+        }))
+    ).pipe(map((response) => updatePermissionsSuccess(response.data)),
+        catchError((error) => of(updatePermissionsError(error.message))))
+
+export default combineEpics(createUser, getUsers, getUserById, updatePermissions)

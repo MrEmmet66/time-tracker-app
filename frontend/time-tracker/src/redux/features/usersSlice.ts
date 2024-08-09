@@ -1,5 +1,6 @@
 import {User} from "../../models/user.ts";
-import {createSlice} from "@reduxjs/toolkit";
+import {createSlice, current} from "@reduxjs/toolkit";
+import {notification} from "antd";
 
 interface UsersSlice {
     users: User[];
@@ -38,12 +39,28 @@ const usersSlice = createSlice({
         },
         getUsersByIdError: (state, action) => {
             state.error = action.payload;
+
+        },
+        updatePermissionsSuccess: (state, action) => {
+            state.users.find(user => user.id === action.payload.updatePermissions.id).permissions = action.payload.updatePermissions.permissions;
+            state.error = null
+            notification.success({
+                message: 'Success',
+                description: 'Permissions updated successfully',
+            });
+        },
+        updatePermissionsError: (state, action) => {
+            state.error = action.payload;
+            notification.error({
+                message: 'Update Permissions Error',
+                description: state.error,
+            });
         }
 
     }
 })
 
-export const { createUserSuccess, createUserError, getUsersByIdSuccess, getUsersByIdError, getUsersSuccess, getUsersError } = usersSlice.actions
+export const {updatePermissionsSuccess, updatePermissionsError, createUserSuccess, createUserError, getUsersByIdSuccess, getUsersByIdError, getUsersSuccess, getUsersError } = usersSlice.actions
 
 export const authState = (state: UsersSlice) => state
 

@@ -7,7 +7,7 @@ interface CreateUserModalProps {
     onCancel: () => void;
 }
 
-const CreateUserModal: React.FC<CreateUserModalProps> = ({visible, onCreate, onCancel}) => {
+const CreateUserModal: React.FC<CreateUserModalProps> = ({visible, onCreate}) => {
     const [form] = Form.useForm()
 
     const handleOk = () => {
@@ -23,12 +23,17 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({visible, onCreate, onC
 
     }
 
+    const onCancel = () => {
+        visible = false
+    }
+
     return (
         <Modal open={visible}
             title='Create a new user'
             okText='Create'
             cancelText='Cancel'
             onOk={handleOk}>
+            onCancel={onCancel}
             <Form form={form} layout="vertical" name={'create_user_form'}>
                 <Form.Item name='email'
                            label='Email'
