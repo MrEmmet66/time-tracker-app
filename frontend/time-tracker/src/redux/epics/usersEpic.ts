@@ -17,6 +17,7 @@ const createUser = (action$) =>
                   permissions {
                     name
                   }
+                  email
                   firstName
                   lastName
                 } 
@@ -55,7 +56,16 @@ const getUserById = (action$) =>
         ofType('GET_USER_BY_ID'),
         switchMap((action) =>
         fetchGraphQl({
-            query: ``,
+            query: `query GetUserById($id:ID!) {
+              user(id:$id) {
+                email
+                firstName
+                lastName
+                permissions {
+                  name
+                }
+              }
+            }`,
             variables: {
                 id: action.payload.id
             }
