@@ -54,7 +54,7 @@ function Index() {
                     <Timer/>
                 </div>
                 <div className="my-10">
-                    <DatePicker onChange={setDate}/>
+                    <DatePicker size="middle" onChange={setDate}/>
                 </div>
                 <div className="mt-10 mb-5 space-y-4">
                     {workEntries?.map((workEntry) => {

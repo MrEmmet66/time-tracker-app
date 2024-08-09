@@ -23,7 +23,7 @@ const Header = ({user}: IProps) => {
                         <UserNav user={user}/>
                     ) : (
                         <Link to={PAGES.LOGIN}>
-                            <Button type="primary">Login</Button>
+                            <Button type="primary" size="middle">Login</Button>
                         </Link>
                     )}
                 </div>
