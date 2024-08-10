@@ -1,13 +1,18 @@
-import config from "./config.ts";
+import config from "../config/config.ts";
+import {getToken} from "./token.ts";
 
-export const fetchGraphQl = async (body: { query: string; }) => {
+export const fetchGraphQl = async (body: {
+    query: string;
+    variables: { email: string; password: string };
+}) => {
     const response = await fetch(config.API_ENDPOINT, {
-        method: 'POST',
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('jwtToken') || null
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + getToken(),
         },
         body: JSON.stringify(body),
-    })
-    return await response.json()
-}
+    });
+
+    return await response.json();
+};

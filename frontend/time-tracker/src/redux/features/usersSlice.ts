@@ -1,5 +1,5 @@
 import {User} from "../../models/user.ts";
-import {createSlice, current} from "@reduxjs/toolkit";
+import {createSlice} from "@reduxjs/toolkit";
 import {notification} from "antd";
 
 interface UsersSlice {
@@ -27,7 +27,7 @@ const usersSlice = createSlice({
         },
         getUsersSuccess: (state, action) => {
             console.log(action.payload)
-            state.users = action.payload.users;
+            state.users = action.payload.users || [];
             state.error = null;
         },
         getUsersError: (state, action) => {

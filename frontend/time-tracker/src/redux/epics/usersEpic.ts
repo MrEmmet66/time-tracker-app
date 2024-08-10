@@ -1,20 +1,22 @@
-import {combineEpics, ofType} from "redux-observable";
-import {catchError, map, of, switchMap} from "rxjs";
-import {fetchGraphQl} from "../../utils/apiActions.ts";
+import { combineEpics, ofType } from "redux-observable";
+import { catchError, map, of, switchMap } from "rxjs";
+import { fetchGraphQl } from "../../utils/apiActions.ts";
 import {
-    createUserError,
-    createUserSuccess,
-    getUsersByIdSuccess,
-    getUsersSuccess, updatePermissionsError,
-    updatePermissionsSuccess
+  createUserError,
+  createUserSuccess,
+  getUsersByIdSuccess,
+  getUsersSuccess,
+  updatePermissionsError,
+  updatePermissionsSuccess,
 } from "../features/usersSlice.ts";
 
 const createUser = (action$) =>
-    action$.pipe(
-        ofType('CREATE_USER'),
-        switchMap((action) =>
+  action$
+    .pipe(
+      ofType("CREATE_USER"),
+      switchMap((action) =>
         fetchGraphQl({
-            query: `mutation CreateUser($email: String!
+          query: `mutation CreateUser($email: String!
               $password: String! 
               $firstName: String! 
               $lastName: String!) {
@@ -28,22 +30,27 @@ const createUser = (action$) =>
                   lastName
                 } 
               }`,
-            variables: {
-                email: action.payload.email,
-                password: action.payload.password,
-                firstName: action.payload.firstName,
-                lastName: action.payload.lastName
-            }
-        }))
-    ).pipe(map((response) => createUserSuccess(response.data)),
-        catchError((error) => of(createUserError(error.message))))
+          variables: {
+            email: action.payload.email,
+            password: action.payload.password,
+            firstName: action.payload.firstName,
+            lastName: action.payload.lastName,
+          },
+        })
+      )
+    )
+    .pipe(
+      map((response) => createUserSuccess(response.data)),
+      catchError((error) => of(createUserError(error.message)))
+    );
 
 const getUsers = (action$) =>
-    action$.pipe(
-        ofType('GET_ALL_USERS'),
-        switchMap((action) =>
+  action$
+    .pipe(
+      ofType("GET_ALL_USERS"),
+      switchMap((action) =>
         fetchGraphQl({
-            query: `query {
+          query: `query {
               users {
                 id
                 email
@@ -53,16 +60,22 @@ const getUsers = (action$) =>
                   name
                 }
               }
-            }`})))
-.pipe(map((response) => getUsersSuccess(response.data)),
-    catchError((error) => of(createUserError(error.message))))
+            }`,
+        })
+      )
+    )
+    .pipe(
+      map((response) => getUsersSuccess(response.data)),
+      catchError((error) => of(createUserError(error.message)))
+    );
 
 const getUserById = (action$) =>
-    action$.pipe(
-        ofType('GET_USER_BY_ID'),
-        switchMap((action) =>
+  action$
+    .pipe(
+      ofType("GET_USER_BY_ID"),
+      switchMap((action) =>
         fetchGraphQl({
-            query: `query GetUserById($id:ID!) {
+          query: `query GetUserById($id:ID!) {
               user(id:$id) {
                 email
                 firstName
@@ -72,19 +85,24 @@ const getUserById = (action$) =>
                 }
               }
             }`,
-            variables: {
-                id: action.payload.id
-            }
-        })))
-.pipe(map((response) => getUsersByIdSuccess(response.data)),
-    catchError((error) => of(createUserError(error.message))))
+          variables: {
+            id: action.payload.id,
+          },
+        })
+      )
+    )
+    .pipe(
+      map((response) => getUsersByIdSuccess(response.data)),
+      catchError((error) => of(createUserError(error.message)))
+    );
 
 const updatePermissions = (action$) =>
-    action$.pipe(
-        ofType('UPDATE_PERMISSIONS'),
-        switchMap((action) =>
+  action$
+    .pipe(
+      ofType("UPDATE_PERMISSIONS"),
+      switchMap((action) =>
         fetchGraphQl({
-            query:`mutation UpdatePermissions($id:ID! $permissions:[String]!) {
+          query: `mutation UpdatePermissions($id:ID! $permissions:[String]!) {
               updatePermissions(id:$id permissions:$permissions) {
                 id
                 permissions {
@@ -92,12 +110,21 @@ const updatePermissions = (action$) =>
                 }
               }
             }`,
-            variables: {
-                id: action.payload.id,
-                permissions: action.payload.permissions
-            }
-        }))
-    ).pipe(map((response) => updatePermissionsSuccess(response.data)),
-        catchError((error) => of(updatePermissionsError(error.message))))
+          variables: {
+            id: action.payload.id,
+            permissions: action.payload.permissions,
+          },
+        })
+      )
+    )
+    .pipe(
+      map((response) => updatePermissionsSuccess(response.data)),
+      catchError((error) => of(updatePermissionsError(error.message)))
+    );
 
-export default combineEpics(createUser, getUsers, getUserById, updatePermissions)
+export default combineEpics(
+  createUser,
+  getUsers,
+  getUserById,
+  updatePermissions
+);

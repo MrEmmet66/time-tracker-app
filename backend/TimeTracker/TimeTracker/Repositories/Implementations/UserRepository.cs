@@ -85,7 +85,7 @@ public class UserRepository : IUserRepository
         var count = await dbConnection.ExecuteScalarAsync<int>(checkEmailQuery, new { user.Email });
         if (count > 0)
         {
-            throw new InvalidOperationException("User with this email already exists.");
+            throw new ArgumentException("User with this email already exists.");
         }
         
         const string sqlQuery = $"""
@@ -110,7 +110,7 @@ public class UserRepository : IUserRepository
 
         if (!isPasswordsMatch)
         {
-            throw new BadHttpRequestException("Incorrect email or password.");
+            throw new ArgumentException("Incorrect email or password.");
         }
         
         var claims = new List<Claim>
@@ -194,6 +194,13 @@ public class UserRepository : IUserRepository
 
     public async Task<User> SetUserStatus(int userId, bool isActive)
     {
+        var user = await GetById(userId);
+    
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found.");
+        }
+
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
                                  UPDATE Users
@@ -207,6 +214,7 @@ public class UserRepository : IUserRepository
             isActive = isActive
         });
 
-        return await GetById(userId);
+        user.IsActive = isActive;
+        return user;
     }
 }
