@@ -21,7 +21,7 @@ const login = (action$: Observable<any>) =>
                               lastName
                               permissions {
                                 name
-                              }
+                               }
                             }
                           }
                         }`,

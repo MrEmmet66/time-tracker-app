@@ -3,11 +3,13 @@ import {createEpicMiddleware} from "redux-observable";
 
 import authReducer from "./features/authSlice.ts";
 import {rootEpic} from "./epics/rootEpic.ts";
+import usersSlice from "./features/usersSlice.ts";
 
 const epicMiddleware = createEpicMiddleware();
 
 const rootReducer = combineReducers({
     auth: authReducer,
+    users: usersSlice
 });
 
 export const store = configureStore({
