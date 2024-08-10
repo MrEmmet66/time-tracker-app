@@ -21,6 +21,7 @@ const UserItem: React.FC<UserItemProps> = ({user}) => {
     return (
         <>
             <Card
+                className="border border-zinc-400"
                 hoverable={true}
                 title={`${user.firstName} ${user.lastName}`}
                 onClick={() => setIsModalVisible(true)}

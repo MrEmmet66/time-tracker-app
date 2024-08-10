@@ -1,27 +1,20 @@
-import {
-    UploadOutlined,
-    UserOutlined,
-    VideoCameraOutlined,
-} from "@ant-design/icons";
+import {UserOutlined, HomeOutlined} from "@ant-design/icons";
 import {Layout, Menu} from "antd";
+import {PAGES} from "../../constants/pages.constants";
+import {Link} from "react-router-dom";
 
 const {Sider} = Layout;
 
 const menuItems = [
     {
-        key: "1",
+        key: "home",
+        icon: <HomeOutlined/>,
+        label: <Link to={PAGES.HOME}>Home</Link>,
+    },
+    {
+        key: "users",
         icon: <UserOutlined/>,
-        label: "nav 1",
-    },
-    {
-        key: "2",
-        icon: <VideoCameraOutlined/>,
-        label: "nav 2",
-    },
-    {
-        key: "3",
-        icon: <UploadOutlined/>,
-        label: "nav 3",
+        label: <Link to={PAGES.USERS}>Users</Link>,
     },
 ];
 
@@ -32,7 +25,7 @@ const Sidebar = () => {
                 <Menu
                     theme="light"
                     mode="inline"
-                    defaultSelectedKeys={["1"]}
+                    defaultSelectedKeys={["home"]}
                     items={menuItems}
                 />
             </div>

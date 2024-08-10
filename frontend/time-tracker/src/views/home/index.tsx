@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {redirect, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {DatePicker} from "antd";
 import {Dayjs} from "dayjs";
 
@@ -9,6 +9,8 @@ import LayoutPage from "../../layouts/LayoutPage.tsx";
 import Timer from "../../components/timer/Timer.tsx";
 import {PAGES} from "../../constants/pages.constants.ts";
 import {convertSecondsToTime, formatTimeToString} from "../../utils/time.ts";
+import {jwtDecode} from "jwt-decode";
+import {getToken} from "../../utils/token.ts";
 
 function Index() {
     const [date, setDate] = useState<Dayjs | null>(null);
@@ -21,14 +23,15 @@ function Index() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!user) {
+        try {
+            jwtDecode(getToken());
+        } catch {
             navigate(PAGES.LOGIN);
         }
     }, [user, navigate]);
 
     useEffect(() => {
         if (!user) {
-            redirect(PAGES.LOGIN);
             return;
         }
 

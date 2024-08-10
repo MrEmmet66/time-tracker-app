@@ -1,23 +1,25 @@
-import {useSelector} from "react-redux";
+import { useSelector } from "react-redux";
 
-import {useRouter} from "../../hooks/use-router.ts";
-import LayoutPage from "../../layouts/LayoutPage.tsx";
+import { useRouter } from "../../hooks/use-router.ts";
 import LoginForm from "../../components/forms/LoginForm.tsx";
-import {RootState} from "../../redux/store.ts";
+import { RootState } from "../../redux/store.ts";
+import AuthLayout from "../../layouts/AuthLayout.tsx";
 
 function LoginPage() {
-    const router = useRouter();
-    const {user} = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
+  const { user } = useSelector((state: RootState) => state.auth);
 
-    if (user) {
-        router.push("/");
-    }
+  if (user) {
+    router.push("/");
+  }
 
-    return (
-        <LayoutPage>
-            <LoginForm/>
-        </LayoutPage>
-    );
+  return (
+    <AuthLayout>
+      <div className="mt-40">
+        <LoginForm />
+      </div>
+    </AuthLayout>
+  );
 }
 
 export default LoginPage;
