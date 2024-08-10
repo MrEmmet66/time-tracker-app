@@ -1,8 +1,8 @@
 import React from 'react';
-import { Modal, Form, Input, Select, Button } from 'antd';
-import { User } from '../../models/user.ts';
-import { permissions } from '../../constants/permissions.constants.ts';
-import { useDispatch } from 'react-redux';
+import {Modal, Form, Input, Select, Button} from 'antd';
+import {User} from '../../models/user.ts';
+import {permissions} from '../../constants/permissions.constants.ts';
+import {useDispatch} from 'react-redux';
 
 interface UserEditModalProps {
     visible: boolean;
@@ -11,7 +11,7 @@ interface UserEditModalProps {
     onCancel: () => void;
 }
 
-const UserEditModal: React.FC<UserEditModalProps> = ({ visible, user, onSave, onCancel }) => {
+const UserEditModal: React.FC<UserEditModalProps> = ({visible, user, onSave, onCancel}) => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
 
@@ -26,7 +26,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ visible, user, onSave, on
             permissions: values.permissions
         };
 
-        dispatch({ type: 'UPDATE_PERMISSIONS', payload: {id: user.id, permissions:values.permissions} });
+        dispatch({type: 'UPDATE_PERMISSIONS', payload: {id: user.id, permissions: values.permissions}});
     };
 
     return (
@@ -52,13 +52,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ visible, user, onSave, on
                 onFinish={handleFinish}
             >
                 <Form.Item label="Email">
-                    <Input value={user.email} disabled />
+                    <Input value={user.email} disabled/>
                 </Form.Item>
                 <Form.Item label="First Name">
-                    <Input value={user.firstName} disabled />
+                    <Input value={user.firstName} disabled/>
                 </Form.Item>
                 <Form.Item label="Last Name">
-                    <Input value={user.lastName} disabled />
+                    <Input value={user.lastName} disabled/>
                 </Form.Item>
                 <Form.Item
                     name="permissions"

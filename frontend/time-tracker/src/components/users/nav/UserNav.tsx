@@ -42,6 +42,7 @@ const UserNav = ({user}: IProps) => {
             placement="bottom"
             icon={<UserOutlined/>}
             trigger={["click"]}
+            size="middle"
         >
             {user.email}
         </Dropdown.Button>

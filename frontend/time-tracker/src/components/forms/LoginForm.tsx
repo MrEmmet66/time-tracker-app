@@ -46,6 +46,7 @@ function LoginForm() {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        size="middle"
                     />
                 </Form.Item>
                 <Form.Item
@@ -59,6 +60,7 @@ function LoginForm() {
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
+                        size="middle"
                     />
                 </Form.Item>
                 <Form.Item>
@@ -67,6 +69,7 @@ function LoginForm() {
                         type="primary"
                         htmlType="submit"
                         onClick={handleSubmit}
+                        size="middle"
                     >
                         Login
                     </Button>
