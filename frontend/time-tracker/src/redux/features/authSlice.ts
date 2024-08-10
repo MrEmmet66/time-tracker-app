@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {User} from "../../models/user.ts";
 import {jwtDecode} from "jwt-decode";
-import {setToken} from "../../utils/token.ts";
+import {clearToken, setToken} from "../../utils/token.ts";
 
 export interface AuthState {
     error: string | null;
@@ -33,20 +33,28 @@ const authSlice = createSlice({
             state.error = action.payload;
         },
         setAuthStateFromToken: (state, action: PayloadAction<string>) => {
-            const decodedToken: User = jwtDecode(action.payload);
-            console.log(decodedToken);
-            state.user = {
-                id: decodedToken.id,
-                firstName: decodedToken.firstName,
-                lastName: decodedToken.lastName,
-                email: decodedToken.email,
-                permissions: JSON.parse(decodedToken.permissions.toString()),
-            };
-            state.jwtToken = action.payload;
-            state.error = null;
-        },
-    },
-});
+            const decodedToken: any = jwtDecode(action.payload);
+            const currentTime = Date.now() / 1000;
+
+            if (decodedToken.exp < currentTime) {
+                state.user = null;
+                state.jwtToken = null;
+                state.error = "Token expired";
+                clearToken();
+            } else {
+                state.user = {
+                    id: decodedToken.id,
+                    firstName: decodedToken.firstName,
+                    lastName: decodedToken.lastName,
+                    email: decodedToken.email,
+                    permissions: JSON.parse(decodedToken.permissions.toString())
+                };
+                state.jwtToken = action.payload;
+                state.error = null;
+            }
+        }
+    }
+})
 
 export const {setAuthStateFromToken, loginSuccess, loginFailed} =
     authSlice.actions;
