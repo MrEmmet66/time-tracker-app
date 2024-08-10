@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input, Select, Button } from 'antd';
-import { User } from '../models/user.ts';
-import { permissions } from '../utils/permissions.ts';
+import { User } from '../../models/user.ts';
+import { permissions } from '../../constants/permissions.constants.ts';
 import { useDispatch } from 'react-redux';
 
 interface UserEditModalProps {

@@ -1,5 +1,5 @@
 import { combineEpics, ofType } from "redux-observable";
-import { catchError, map, of, switchMap } from "rxjs";
+import { catchError, map, Observable, of, switchMap } from "rxjs";
 import { fetchGraphQl } from "../../utils/apiActions.ts";
 import {
   createUserError,
@@ -10,7 +10,7 @@ import {
   updatePermissionsSuccess,
 } from "../features/usersSlice.ts";
 
-const createUser = (action$) =>
+const createUser = (action$: Observable<any>) =>
   action$
     .pipe(
       ofType("CREATE_USER"),
@@ -44,7 +44,7 @@ const createUser = (action$) =>
       catchError((error) => of(createUserError(error.message)))
     );
 
-const getUsers = (action$) =>
+const getUsers = (action$: Observable<any>) =>
   action$
     .pipe(
       ofType("GET_ALL_USERS"),
@@ -69,7 +69,7 @@ const getUsers = (action$) =>
       catchError((error) => of(createUserError(error.message)))
     );
 
-const getUserById = (action$) =>
+const getUserById = (action$: Observable<any>) =>
   action$
     .pipe(
       ofType("GET_USER_BY_ID"),
@@ -96,7 +96,7 @@ const getUserById = (action$) =>
       catchError((error) => of(createUserError(error.message)))
     );
 
-const updatePermissions = (action$) =>
+const updatePermissions = (action$: Observable<any>) =>
   action$
     .pipe(
       ofType("UPDATE_PERMISSIONS"),

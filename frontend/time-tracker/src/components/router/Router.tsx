@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Index from "../../views/home";
-import LoginPage from "../../views/auth/LoginPage";
-import UsersPage from "../../routes/users/UsersPage.tsx";
+import LoginPage from "../../views/auth/";
+import UsersPage from "../../views/users/";
 
 const Router = () => {
   return (
