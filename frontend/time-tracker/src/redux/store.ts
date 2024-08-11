@@ -2,16 +2,18 @@ import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {createEpicMiddleware} from "redux-observable";
 
 import authReducer from "./features/authSlice.ts";
+import usersSlice from "./features/usersSlice.ts";
+import teamReducer from "./features/teamSlice.ts";
 import workEntryReducer from "./features/workEntrySlice.ts";
 import {rootEpic} from "./epics/rootEpic.ts";
-import usersSlice from "./features/usersSlice.ts";
 
 const epicMiddleware = createEpicMiddleware();
 
 const rootReducer = combineReducers({
     auth: authReducer,
-    workEntry: workEntryReducer,
     users: usersSlice,
+    team: teamReducer,
+    workEntry: workEntryReducer,
 });
 
 export const store = configureStore({
