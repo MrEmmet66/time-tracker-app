@@ -69,12 +69,40 @@ public class TeamRepository : ITeamRepository
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                     SELECT * FROM Teams
+                                 SELECT team.*, us.Id, us.FirstName, us.LastName, us.Email, us.Permissions
+                                 FROM Teams team
+                                 LEFT JOIN TeamUser tu ON team.Id = tu.TeamId AND tu.IsActive=1
+                                 LEFT JOIN Users us ON tu.UserId = us.Id
                                  """;
+        
+        var permissionUtils = new PermissionUtils();
+        var teamsDictionary = new Dictionary<int, Team>();
+        await dbConnection.QueryAsync<Team, UserDto, Team>(sqlQuery, (team, userDto) =>
+        {
+            if (!teamsDictionary.TryGetValue(team.Id, out var currentTeam))
+            {
+                currentTeam = team;
+                teamsDictionary.Add(currentTeam.Id, currentTeam);
+            }
 
-        var teams = await dbConnection.QueryAsync<Team>(sqlQuery);
+            if (userDto != null)
+            {
+                var user = new User()
+                {
+                    Id = userDto.Id,
+                    Email = userDto.Email,
+                    FirstName = userDto.FirstName,
+                    LastName = userDto.LastName,
+                    IsActive = userDto.IsActive,
+                    Permissions = permissionUtils.DeserializePermissions(userDto.Permissions)
+                };
+                currentTeam.Members.Add(user);
+            }
 
-        return teams;
+            return currentTeam;
+        }, splitOn: "Id");
+        
+        return teamsDictionary.Values.ToList();
     }
 
     public async Task<Team> Create(Team obj)

@@ -1,5 +1,6 @@
 import config from "../config/config.ts";
 import {IId} from "../models/base.ts";
+import {ITeamCreate} from "../models/team.ts";
 import {
     IAuthUser,
     IUserChangePermissions,
@@ -16,7 +17,8 @@ export const fetchGraphQl = async (body: {
         | IId
         | IUserChangePermissions
         | IWorkEntryCreate
-        | { userId: number }
+        | ITeamCreate
+        | { userId: number, teamId?: number }
         | { date: string; userId?: number };
 }) => {
     const response = await fetch(config.API_ENDPOINT, {
