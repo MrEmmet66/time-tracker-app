@@ -6,12 +6,19 @@ import LayoutPage from "../../layouts/LayoutPage";
 import TeamCreate from "../../components/teams/TeamCreate";
 import {RootState} from "../../redux/store";
 import TeamList from "../../components/teams/TeamList";
+import {usePermissionCheck} from "../../hooks/use-permissions-check";
+import {PERMISSIONS} from "../../constants/permissions.constants";
 
 const TeamsPage = () => {
     const [isOpenModal, setOpenModal] = useState(false);
     const {teams} = useSelector((state: RootState) => state.team);
     const {users} = useSelector((state: RootState) => state.users);
     const dispatch = useDispatch();
+
+    usePermissionCheck([
+        PERMISSIONS.MANAGE_ALL_MEMBERS,
+        PERMISSIONS.MANAGE_TEAM_MEMBERS,
+    ]);
 
     useEffect(() => {
         dispatch({type: "GET_ALL_USERS"});

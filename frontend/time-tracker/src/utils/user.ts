@@ -4,9 +4,15 @@ import {clearToken} from "./token";
 
 export const userHasAccess = (
     userPermissions: IPermission[],
-    permission: PERMISSIONS
+    permissions: PERMISSIONS | PERMISSIONS[]
 ) => {
-    return userPermissions.some((perm) => perm.name === permission);
+    if (Array.isArray(permissions)) {
+        return permissions.some((requiredPermission) =>
+            userPermissions.some((perm) => perm.name === requiredPermission)
+        );
+    }
+
+    return userPermissions.some((perm) => perm.name === permissions);
 };
 
 export const logout = () => {
