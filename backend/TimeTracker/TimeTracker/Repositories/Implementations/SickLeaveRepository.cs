@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using TimeTracker.Constants;
 using TimeTracker.Data;
 using TimeTracker.Models;
 using TimeTracker.Repositories.Infrastructure;
@@ -18,7 +19,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason FROM SickLeave
+                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE SickLeave.Id = @Id
                                  """;
@@ -39,7 +40,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason FROM SickLeave
+                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  """;
         return await dbConnection.QueryAsync<SickLeave, User, SickLeave>(sqlQuery, (sickLeave, user) =>
@@ -53,12 +54,12 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                    INSERT INTO SickLeave (UserId, StartSickLeave, EndSickLeave, Reason)
+                                    INSERT INTO SickLeave (UserId, StartSickLeave, EndSickLeave, Reason, Status)
                                     OUTPUT INSERTED.Id
-                                    VALUES (@UserId, @StartSickLeave, @EndSickLeave, @Reason)
+                                    VALUES (@UserId, @StartSickLeave, @EndSickLeave, @Reason, @Status)
                                  """;
         int id = await dbConnection.ExecuteScalarAsync<int>(sqlQuery, new 
-            { UserId = obj.User.Id, StartSickLeave = obj.StartSickLeave, EndSickLeave = obj.EndSickLeave, Reason = obj.Reason });
+            { UserId = obj.User.Id, StartSickLeave = obj.StartSickLeave, EndSickLeave = obj.EndSickLeave, Reason = obj.Reason, Status = obj.Status });
         return await GetById(id);
     }
 
@@ -78,7 +79,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason FROM SickLeave
+                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE SickLeave.UserId = @UserId
                                  """;
@@ -93,7 +94,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT TOP 1 SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason FROM SickLeave
+                                 SELECT TOP 1 SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE SickLeave.UserId = @UserId
                                  ORDER BY StartSickLeave DESC
@@ -104,5 +105,44 @@ public class SickLeaveRepository : ISickLeaveRepository
             return sickLeave;
         }), new { UserId = userId }, splitOn:"UserId");
         return sickLeaves.FirstOrDefault();
+    }
+
+    public async Task<SickLeave> ApproveSickLeave(int sickLeaveId)
+    {
+        using var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 UPDATE SickLeave
+                                 SET Status = @Status
+                                 WHERE Id = @Id
+                                 """;
+        
+        await dbConnection.ExecuteAsync(sqlQuery, new { Id = sickLeaveId, Status = ApplicationStatuses.Approved });
+        return await GetById(sickLeaveId);
+    }
+
+    public async Task<SickLeave> RejectSickLeave(int sickLeaveId)
+    {
+        using var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 UPDATE SickLeave
+                                 SET Status = @Status
+                                 WHERE Id = @Id
+                                 """;
+        
+        await dbConnection.ExecuteAsync(sqlQuery, new { Id = sickLeaveId, Status = ApplicationStatuses.Rejected });
+        return await GetById(sickLeaveId);
+    }
+
+    public async Task<SickLeave> CancelSickLeave(int sickLeaveId)
+    {
+        using var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 UPDATE SickLeave
+                                 SET Status = @Status
+                                 WHERE Id = @Id
+                                 """;
+        
+        await dbConnection.ExecuteAsync(sqlQuery, new { Id = sickLeaveId, Status = ApplicationStatuses.Cancelled });
+        return await GetById(sickLeaveId);
     }
 }

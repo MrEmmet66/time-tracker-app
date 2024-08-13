@@ -19,9 +19,17 @@ public class AppMutation : ObjectGraphType
 
         AddField(vacationMutation.GetField("setVacation"));
         AddField(vacationMutation.GetField("removeVacation"));
+        AddField(vacationMutation.GetField("approveVacation"));
+        AddField(vacationMutation.GetField("rejectVacation"));
+        AddField(vacationMutation.GetField("cancelVacation"));
+        AddField(vacationMutation.GetField("createVacationApplication"));
         
         AddField(sickLeaveMutation.GetField("setSickLeave"));
         AddField(sickLeaveMutation.GetField("removeSickLeave"));
+        AddField(sickLeaveMutation.GetField("approveSickLeave"));
+        AddField(sickLeaveMutation.GetField("rejectSickLeave"));
+        AddField(sickLeaveMutation.GetField("cancelSickLeave"));
+        AddField(sickLeaveMutation.GetField("createSickLeaveApplication"));
 
     }
 }
