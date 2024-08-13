@@ -4,7 +4,7 @@ namespace TimeTracker.GraphQL.Queries;
 
 public class AppQuery : ObjectGraphType
 {
-    public AppQuery(UserQuery userQuery, TeamQuery teamQuery, WorkEntryQuery workEntryQuery)
+    public AppQuery(UserQuery userQuery, TeamQuery teamQuery, WorkEntryQuery workEntryQuery, VacationQuery vacationQuery, SickLeaveQuery sickLeaveQuery)
     {
         AddField(userQuery.GetField("user"));
         AddField(userQuery.GetField("users"));
@@ -16,6 +16,16 @@ public class AppQuery : ObjectGraphType
         AddField(workEntryQuery.GetField("workEntry"));
         AddField(workEntryQuery.GetField("workEntriesByUserId"));
         AddField(workEntryQuery.GetField("workEntriesByDate"));
+        
+        AddField(vacationQuery.GetField("vacations"));
+        AddField(vacationQuery.GetField("vacation"));
+        AddField(vacationQuery.GetField("userVacations"));
+        AddField(vacationQuery.GetField("lastUserVacation"));
+        
+        AddField(sickLeaveQuery.GetField("sickLeaves"));
+        AddField(sickLeaveQuery.GetField("sickLeave"));
+        AddField(sickLeaveQuery.GetField("userSickLeaves"));
+        AddField(sickLeaveQuery.GetField("lastUserSickLeave"));
 
     }
 }

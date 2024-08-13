@@ -7,7 +7,11 @@ public class ApproveVacationPermission : BasePermission
         TargetVacation = targetVacation;
     }
     
-    public Vacation TargetVacation { get; set; }
+    public ApproveVacationPermission(string name) : base(name)
+    {
+    }
+    
+    public Vacation? TargetVacation { get; set; }
     
     public override bool CanExecute(User user)
     {
