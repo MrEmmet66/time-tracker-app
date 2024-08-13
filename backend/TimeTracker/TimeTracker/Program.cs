@@ -28,10 +28,13 @@ builder.Services.AddSingleton<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IWorkEntryRepository, WorkEntryRepository>();
+builder.Services.AddScoped<IVacationRepository, VacationRepository>();
+builder.Services.AddScoped<ISickLeaveRepository, SickLeaveRepository>();
 
 builder.Services.AddScoped<ISchema, AppSchema>();
 
 builder.Services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
+
 builder.Services.AddGraphQL(b => b
     .AddSystemTextJson()
     .AddGraphTypes(typeof(AppSchema).Assembly)
