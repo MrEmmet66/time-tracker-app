@@ -19,7 +19,8 @@ export const fetchGraphQl = async (body: {
         | IWorkEntryCreate
         | ITeamCreate
         | { userId: number, teamId?: number }
-        | { date: string; userId?: number };
+        | { date: string; userId?: number }
+        | { password: string, newPassword: string }
 }) => {
     const response = await fetch(config.API_ENDPOINT, {
         method: "POST",

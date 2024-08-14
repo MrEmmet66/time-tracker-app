@@ -87,7 +87,7 @@ public class UserRepository : IUserRepository
         {
             throw new ArgumentException("User with this email already exists.");
         }
-        
+
         const string sqlQuery = $"""
                                  INSERT INTO Users (Email, PasswordHash, FirstName, LastName)
                                  OUTPUT INSERTED.Id
@@ -112,7 +112,7 @@ public class UserRepository : IUserRepository
         {
             throw new ArgumentException("Incorrect email or password.");
         }
-        
+
         var claims = new List<Claim>
         {
             new Claim("id", candidate.Id.ToString()),
@@ -195,7 +195,7 @@ public class UserRepository : IUserRepository
     public async Task<User> SetUserStatus(int userId, bool isActive)
     {
         var user = await GetById(userId);
-    
+
         if (user == null)
         {
             throw new KeyNotFoundException("User not found.");
@@ -216,5 +216,47 @@ public class UserRepository : IUserRepository
 
         user.IsActive = isActive;
         return user;
+    }
+
+    public async Task<User> EditUser(User user)
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 UPDATE Users
+                                 SET Email=@Email, FirstName=@FirstName, LastName=@LastName
+                                 WHERE Id=@Id
+                                 """;
+
+        await dbConnection.ExecuteAsync(sqlQuery, user);
+
+        var _user = await GetById(user.Id);
+
+        return _user;
+    }
+
+    public async Task<bool> ChangePassword(User user, string password, string newPassword)
+    {
+        var _user = await GetByEmail(user.Email);
+        var isPasswordsMatch = BCrypt.Net.BCrypt.Verify(password, _user.PasswordHash);
+
+        if (!isPasswordsMatch)
+        {
+            throw new ArgumentException("Incorrect data entered.");
+        }
+
+        var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 UPDATE Users
+                                 SET PasswordHash=@PasswordHash
+                                 WHERE Id=@Id
+                                 """;
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+        if (newPassword == null) return false;
+        
+        user.PasswordHash = newPasswordHash;
+        await dbConnection.ExecuteAsync(sqlQuery, user);
+
+        return true;
     }
 }

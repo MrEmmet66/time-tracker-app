@@ -40,6 +40,18 @@ const usersSlice = createSlice({
         getUsersByIdError: (state, action) => {
             state.error = action.payload;
         },
+        updateUserSuccess: () => {
+            notification.success({
+                message: "Success",
+                description: "User data updated successfully",
+            });
+        },
+        changePasswordSuccess: () => {
+            notification.success({
+                message: "Success",
+                description: "Password successfully changed",
+            });
+        },
         updatePermissionsSuccess: (state, action) => {
             const user = state.users.find(
                 (user) => user.id === action.payload.updatePermissions.id
@@ -78,6 +90,8 @@ export const {
     getUsersByIdError,
     getUsersSuccess,
     getUsersError,
+    updateUserSuccess,
+    changePasswordSuccess
 } = usersSlice.actions;
 
 export const authState = (state: UsersSlice) => state;

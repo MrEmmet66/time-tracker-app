@@ -35,6 +35,8 @@ function Index() {
             return;
         }
 
+        dispatch({type: "GET_USER_BY_ID", payload: {id: user.id}})
+
         if (date) {
             dispatch({
                 type: "GET_WORK_ENTRIES_BY_DATE",

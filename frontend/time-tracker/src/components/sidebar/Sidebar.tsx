@@ -4,10 +4,9 @@ import {Layout, Menu} from "antd";
 import {Link, useLocation} from "react-router-dom";
 
 import {PAGES} from "../../constants/pages.constants";
-import {useSelector} from "react-redux";
-import {RootState} from "../../redux/store";
 import {PERMISSIONS} from "../../constants/permissions.constants";
 import {userHasAccess} from "../../utils/user";
+import useGetUser from "../../hooks/use-get-user";
 
 const {Sider} = Layout;
 
@@ -38,7 +37,7 @@ const allMenuItems = [
 ];
 
 const Sidebar = () => {
-    const {user} = useSelector((state: RootState) => state.auth);
+    const user = useGetUser();
     const location = useLocation();
 
     const menuItems = useMemo(() => {
