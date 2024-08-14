@@ -10,6 +10,8 @@ public class AppMutation : ObjectGraphType
         AddField(userMutation.GetField("setUserStatus"));
         AddField(userMutation.GetField("login"));
         AddField(userMutation.GetField("updatePermissions"));
+        AddField(userMutation.GetField("editUser"));
+        AddField(userMutation.GetField("changePassword"));
 
         AddField(teamMutation.GetField("createTeam"));
         AddField(teamMutation.GetField("addUserToTeam"));

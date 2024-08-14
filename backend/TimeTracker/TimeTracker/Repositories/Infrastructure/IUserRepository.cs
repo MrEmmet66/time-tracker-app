@@ -8,4 +8,6 @@ public interface IUserRepository : IBaseRepository<User>
     public Task<User> GetByEmail(string email);
     public Task<User> UpdatePermissions(int userId, string[] permissions);
     public Task<User> SetUserStatus(int userId, bool isActive);
+    public Task<User> EditUser(User user);
+    public Task<bool> ChangePassword(User user, string password, string newPassword);
 }

@@ -18,8 +18,17 @@ const UserNav = ({user}: IProps) => {
     const items: MenuProps["items"] = useMemo(
         () => [
             {
-                label: <a>Logout</a>,
+                label: <a>Profile</a>,
                 key: "0",
+                primary: true,
+                onClick: () => {
+                    router.push(PAGES.PROFILE);
+                },
+                icon: <UserOutlined/>,
+            },
+            {
+                label: <a>Logout</a>,
+                key: "1",
                 danger: true,
                 onClick: () => {
                     message.success("Logout.");

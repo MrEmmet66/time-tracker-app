@@ -1,3 +1,4 @@
+using System.Security.Authentication;
 using GraphQL;
 using GraphQL.Types;
 using TimeTracker.Constants;
@@ -139,6 +140,80 @@ public class UserMutation : ObjectGraphType
                         return null;
                     }
                 }).AuthorizeWithPermissions(Permissions.ManageAllMembers);
+
+        Field<UserType>("editUser")
+            .Arguments(new QueryArguments(
+                new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" },
+                new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "email" },
+                new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "firstName" },
+                new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "lastName" }
+            ))
+            .ResolveAsync(
+                async context =>
+                {
+                    try
+                    {
+                        var userId = context.GetArgument<int>("id");
+                        var email = context.GetArgument<string>("email");
+                        var firstName = context.GetArgument<string>("firstName");
+                        var lastName = context.GetArgument<string>("lastName");
+                        var user = new User()
+                            { Id = userId, Email = email, FirstName = firstName, LastName = lastName };
+
+
+                        return await repository.EditUser(user);
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        context.Errors.Add(new ExecutionError(ex.Message));
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                        return null;
+                    }
+                });
+        
+        Field<BooleanGraphType>("changePassword")
+            .Arguments(new QueryArguments(
+                new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "password" },
+                new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "newPassword" }
+            ))
+            .ResolveAsync(
+                async context =>
+                {
+                    try
+                    {
+                        var user = context.UserContext["User"] as User;
+                        var password = context.GetArgument<string>("password");
+                        var newPassword = context.GetArgument<string>("newPassword");
+
+                        if (user == null)
+                        {
+                            throw new AuthenticationException("You are not authorized.");
+                        }
+                        
+                        return await repository.ChangePassword(user, password, newPassword);
+                    }
+                    catch (AuthenticationException ex)
+                    {
+                        context.Errors.Add(new ExecutionError(ex.Message));
+                        return null;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        context.Errors.Add(new ExecutionError(ex.Message));
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        context.Errors.Add(new ExecutionError("An unexpected error occurred."));
+                        return null;
+                    }
+                });
 
         this.AddAuthorization();
     }

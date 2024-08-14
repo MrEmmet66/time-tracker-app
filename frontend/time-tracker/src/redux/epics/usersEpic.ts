@@ -1,5 +1,5 @@
-import {combineEpics, ofType} from "redux-observable";
-import {catchError, map, Observable, of, switchMap} from "rxjs";
+import {combineEpics, ofType, StateObservable} from "redux-observable";
+import {catchError, map, Observable, of, switchMap, withLatestFrom} from "rxjs";
 import {fetchGraphQl} from "../../utils/apiActions.ts";
 import {
     createUserError,
@@ -8,7 +8,12 @@ import {
     getUsersSuccess,
     updatePermissionsError,
     updatePermissionsSuccess,
+    changePasswordSuccess,
+    updateUserSuccess,
+    getUsersError,
+    getUsersByIdError
 } from "../features/usersSlice.ts";
+import {RootState} from "../store.ts";
 
 const createUser = (action$: Observable<any>) =>
     action$
@@ -77,6 +82,7 @@ const getUserById = (action$: Observable<any>) =>
                 fetchGraphQl({
                     query: `query GetUserById($id:ID!) {
               user(id:$id) {
+                id
                 email
                 firstName
                 lastName
@@ -94,6 +100,64 @@ const getUserById = (action$: Observable<any>) =>
         .pipe(
             map((response) => getUsersByIdSuccess(response.data)),
             catchError((error) => of(createUserError(error.message)))
+        );
+
+const updateUser = (action$: Observable<any>, state$: StateObservable<RootState>) =>
+    action$
+        .pipe(
+            ofType("UPDATE_USER"),
+            switchMap((action) =>
+                fetchGraphQl({
+                    query: `mutation EditUser($id: ID! $email: String! $firstName: String! $lastName: String!) {
+                                editUser(id: $id, email: $email, firstName: $firstName, lastName: $lastName){
+                                    id
+                                    firstName
+                                    lastName
+                                    email
+                                    isActive
+                                }
+                            }`,
+                    variables: {
+                        id: action.payload.id,
+                        email: action.payload.email,
+                        firstName: action.payload.firstName,
+                        lastName: action.payload.lastName,
+                    },
+                })
+            ),
+            withLatestFrom(state$),
+            switchMap(([_, state]) => {
+                const userId = state.auth.user?.id;
+                updateUserSuccess();
+                if (userId) {
+                    return of({type: "GET_USER_BY_ID", payload: {id: userId}});
+                } else {
+                    return of(getUsersByIdError("User ID not found in state"));
+                }
+            }),
+            catchError((error) => of(getUsersByIdError(error.message)))
+        )
+
+
+const changePassword = (action$: Observable<any>) =>
+    action$
+        .pipe(
+            ofType("CHANGE_PASSWORD"),
+            switchMap((action) =>
+                fetchGraphQl({
+                    query: `mutation ChangePassword($password: String! $newPassword: String!) {
+                                        changePassword(password: $password, newPassword: $newPassword)
+                                    }`,
+                    variables: {
+                        password: action.payload.password,
+                        newPassword: action.payload.newPassword,
+                    },
+                })
+            )
+        )
+        .pipe(
+            map(() => changePasswordSuccess()),
+            catchError((error) => of(getUsersError(error.message)))
         );
 
 const updatePermissions = (action$: Observable<any>) =>
@@ -126,5 +190,7 @@ export default combineEpics(
     createUser,
     getUsers,
     getUserById,
-    updatePermissions
+    updatePermissions,
+    updateUser,
+    changePassword
 );
