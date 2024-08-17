@@ -19,7 +19,7 @@ public class VacationRepository : IVacationRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Vacations.Id, UserId, StartVacation, EndVacation, Status FROM Vacations
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE Vacations.Id = @Id
                                  """;
@@ -35,7 +35,7 @@ public class VacationRepository : IVacationRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Vacations.Id, UserId, StartVacation, EndVacation, Status FROM Vacations
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  """;
         var vacations = await dbConnection.QueryAsync<Vacation, User, Vacation>(sqlQuery, (vac, user) =>
@@ -81,7 +81,7 @@ public class VacationRepository : IVacationRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Vacations.Id, UserId, StartVacation, EndVacation, Status FROM Vacations
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE Vacations.UserId = @UserId
                                  """;
@@ -97,7 +97,7 @@ public class VacationRepository : IVacationRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT TOP 1 Vacations.Id, UserId, StartVacation, EndVacation, Status FROM Vacations
+                                 SELECT TOP 1 Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE UserId = @UserId
                                  ORDER BY StartVacation DESC

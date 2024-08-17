@@ -19,7 +19,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
+                                 SELECT SickLeave.Id, StartSickLeave, EndSickLeave, Reason, Status, UserId FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE SickLeave.Id = @Id
                                  """;
@@ -40,7 +40,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
+                                 SELECT SickLeave.Id, StartSickLeave, EndSickLeave, Reason, Status, UserId FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  """;
         return await dbConnection.QueryAsync<SickLeave, User, SickLeave>(sqlQuery, (sickLeave, user) =>
@@ -79,7 +79,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
+                                 SELECT SickLeave.Id, StartSickLeave, EndSickLeave, Reason, Status, UserId FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE SickLeave.UserId = @UserId
                                  """;
@@ -94,7 +94,7 @@ public class SickLeaveRepository : ISickLeaveRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT TOP 1 SickLeave.Id, UserId, StartSickLeave, EndSickLeave, Reason, Status FROM SickLeave
+                                 SELECT TOP 1 SickLeave.Id, StartSickLeave, EndSickLeave, Reason, Status, UserId FROM SickLeave
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE SickLeave.UserId = @UserId
                                  ORDER BY StartSickLeave DESC
