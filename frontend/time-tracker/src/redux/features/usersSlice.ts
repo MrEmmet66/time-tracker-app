@@ -6,12 +6,14 @@ interface UsersSlice {
     users: User[];
     user: User | null;
     error: string | null;
+    totalPages: number
 }
 
 const initialState: UsersSlice = {
     users: [],
     user: null,
     error: null,
+    totalPages: 1
 };
 
 const usersSlice = createSlice({
@@ -19,15 +21,15 @@ const usersSlice = createSlice({
     initialState,
     reducers: {
         createUserSuccess: (state, action) => {
-            state.users.push(action.payload.createUser.user);
+            state.users.push(action.payload.createUser);
             state.error = null;
         },
         createUserError: (state, action) => {
             state.error = action.payload;
         },
         getUsersSuccess: (state, action) => {
-            console.log(action.payload);
-            state.users = action.payload.users || [];
+            state.users = action.payload.users.entities || [];
+            state.totalPages = action.payload.users?.totalPages ?? 1;
             state.error = null;
         },
         getUsersError: (state, action) => {

@@ -22,19 +22,20 @@ const createUser = (action$: Observable<any>) =>
             switchMap((action) =>
                 fetchGraphQl({
                     query: `mutation CreateUser($email: String!
-              $password: String! 
-              $firstName: String! 
-              $lastName: String!) {
-                createUser(email:$email firstName:$firstName password:$password lastName:$lastName) {
-                  id
-                  permissions {
-                    name
-                  }
-                  email
-                  firstName
-                  lastName
-                } 
-              }`,
+                            $password: String! 
+                            $firstName: String! 
+                            $lastName: String!) {
+                        createUser(email:$email firstName:$firstName password:$password lastName:$lastName) {
+                            id
+                            permissions {
+                                name
+                            }
+                            isActive
+                            email
+                            firstName
+                            lastName
+                        } 
+                     }`,
                     variables: {
                         email: action.payload.email,
                         password: action.payload.password,
@@ -55,17 +56,24 @@ const getUsers = (action$: Observable<any>) =>
             ofType("GET_ALL_USERS"),
             switchMap((action) =>
                 fetchGraphQl({
-                    query: `query {
-              users {
-                id
-                email
-                firstName
-                lastName
-                permissions {
-                  name
-                }
-              }
-            }`,
+                    query: `query GetUserById($page: Int){
+                        users (page: $page) {
+                            entities {
+                                id
+                                email
+                                firstName
+                                lastName
+                                isActive
+                                permissions {
+                                    name
+                                }
+                            }
+                            totalPages
+                        }
+                    }`,
+                    variables: {
+                        page: action.payload?.page ?? 1
+                    }
                 })
             )
         )
@@ -81,16 +89,16 @@ const getUserById = (action$: Observable<any>) =>
             switchMap((action) =>
                 fetchGraphQl({
                     query: `query GetUserById($id:ID!) {
-              user(id:$id) {
-                id
-                email
-                firstName
-                lastName
-                permissions {
-                  name
-                }
-              }
-            }`,
+                        user(id:$id) {
+                            id
+                            email
+                            firstName
+                            lastName
+                            permissions {
+                                name
+                            }
+                        }
+                    }`,
                     variables: {
                         id: action.payload.id,
                     },
@@ -167,13 +175,13 @@ const updatePermissions = (action$: Observable<any>) =>
             switchMap((action) =>
                 fetchGraphQl({
                     query: `mutation UpdatePermissions($id:ID! $permissions:[String]!) {
-              updatePermissions(id:$id permissions:$permissions) {
-                id
-                permissions {
-                  name
-                }
-              }
-            }`,
+                        updatePermissions(id:$id permissions:$permissions) {
+                            id
+                            permissions {
+                                name
+                            }
+                        }
+                    }`,
                     variables: {
                         id: action.payload.id,
                         permissions: action.payload.permissions,

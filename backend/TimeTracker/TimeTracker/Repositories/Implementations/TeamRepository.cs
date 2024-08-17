@@ -1,4 +1,5 @@
 using Dapper;
+using TimeTracker.Constants;
 using TimeTracker.Data;
 using TimeTracker.Dtos;
 using TimeTracker.Models;
@@ -65,7 +66,7 @@ public class TeamRepository : ITeamRepository
         return team;
     }
 
-    public async Task<IEnumerable<Team>> GetAll()
+    public async Task<(IEnumerable<Team> Entities, int PagesCount)> GetAll(int? page = 1)
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
@@ -73,8 +74,11 @@ public class TeamRepository : ITeamRepository
                                  FROM Teams team
                                  LEFT JOIN TeamUser tu ON team.Id = tu.TeamId AND tu.IsActive=1
                                  LEFT JOIN Users us ON tu.UserId = us.Id
+                                 ORDER BY team.Id
+                                 OFFSET @OffsetItems ROWS
+                                 FETCH NEXT @FetchItems ROWS ONLY
                                  """;
-        
+
         var permissionUtils = new PermissionUtils();
         var teamsDictionary = new Dictionary<int, Team>();
         await dbConnection.QueryAsync<Team, UserDto, Team>(sqlQuery, (team, userDto) =>
@@ -100,9 +104,14 @@ public class TeamRepository : ITeamRepository
             }
 
             return currentTeam;
+        }, new
+        {
+            OffsetItems = Pages.ElementsOnPage * --page,
+            FetchItems = Pages.ElementsOnPage
         }, splitOn: "Id");
-        
-        return teamsDictionary.Values.ToList();
+        var totalPages = await GetPageCount();
+
+        return (teamsDictionary.Values.ToList(), totalPages);
     }
 
     public async Task<Team> Create(Team obj)
@@ -180,5 +189,25 @@ public class TeamRepository : ITeamRepository
         var team = await dbConnection.QueryFirstOrDefaultAsync<Team>(sqlQuery, new { Name = teamName });
 
         return team != null;
+    }
+    
+    private async Task<int> GetTotalReconds()
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        const string slqQuery = $"""
+                                 SELECT COUNT(*) FROM Teams
+                                 """;
+
+        var totalCount = await dbConnection.QueryFirstAsync<int>(slqQuery);
+
+        return totalCount;
+    }
+    
+    private async Task<int> GetPageCount()
+    {
+        var totalRecords = await GetTotalReconds();
+        int totalPages = (int)Math.Ceiling(totalRecords / (double)Pages.ElementsOnPage);
+
+        return totalPages;
     }
 }

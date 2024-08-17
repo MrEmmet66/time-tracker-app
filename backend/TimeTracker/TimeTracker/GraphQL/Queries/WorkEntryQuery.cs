@@ -11,8 +11,19 @@ public class WorkEntryQuery : ObjectGraphType
 {
     public WorkEntryQuery(IWorkEntryRepository repository)
     {
-        Field<ListGraphType<WorkEntryType>>("workEntries")
-            .ResolveAsync(async _ => await repository.GetAll()
+        Field<EntitiesResultType<WorkEntryType>>("workEntries")
+            .Arguments(new QueryArguments(new QueryArgument<IntGraphType> { Name = "page" }))
+            .ResolveAsync(async context =>
+                {
+                    var page = context.GetArgument<int?>("page") ?? 1;
+                    var (workEntries, totalPages) = await repository.GetAll(page);
+
+                    return new
+                    {
+                        Entities = workEntries,
+                        TotalPages = totalPages
+                    };
+                }
             ).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<WorkEntryType>(

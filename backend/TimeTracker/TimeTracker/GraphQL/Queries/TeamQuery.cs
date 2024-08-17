@@ -11,8 +11,19 @@ public class TeamQuery : ObjectGraphType
 {
     public TeamQuery(ITeamRepository repository)
     {
-        Field<ListGraphType<TeamType>>("teams")
-            .ResolveAsync(async _ => await repository.GetAll()
+        Field<EntitiesResultType<TeamType>>("teams")
+            .Arguments(new QueryArguments(new QueryArgument<IntGraphType> { Name = "page" }))
+            .ResolveAsync(async context =>
+                {
+                    var page = context.GetArgument<int?>("page") ?? 1;
+                    var (teams, totalPages) = await repository.GetAll(page);
+
+                    return new
+                    {
+                        Entities = teams,
+                        TotalPages = totalPages
+                    };
+                }
             ).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<TeamType>(

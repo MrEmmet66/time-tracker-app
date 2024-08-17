@@ -11,8 +11,19 @@ public class UserQuery : ObjectGraphType
 {
     public UserQuery(IUserRepository repository)
     {
-        Field<ListGraphType<UserType>>("users")
-            .ResolveAsync(async _ => await repository.GetAll()
+        Field<EntitiesResultType<UserType>>("users")
+            .Arguments(new QueryArguments(new QueryArgument<IntGraphType> { Name = "page" }))
+            .ResolveAsync(async context =>
+                {
+                    var page = context.GetArgument<int?>("page") ?? 1;
+                    var (users, totalPages) = await repository.GetAll(page);
+
+                    return new
+                    {
+                        Entities = users,
+                        TotalPages = totalPages
+                    };
+                }
             ).AuthorizeWithPermissions(Permissions.ManageAllMembers);
 
         Field<UserType>(

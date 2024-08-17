@@ -1,4 +1,5 @@
 using Dapper;
+using TimeTracker.Constants;
 using TimeTracker.Data;
 using TimeTracker.Dtos;
 using TimeTracker.Models;
@@ -61,7 +62,7 @@ public class WorkEntryRepository : IWorkEntryRepository
         return workEntry;
     }
 
-    public async Task<IEnumerable<WorkEntry>> GetAll()
+    public async Task<(IEnumerable<WorkEntry> Entities, int PagesCount)> GetAll(int? page = 1)
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
@@ -69,7 +70,10 @@ public class WorkEntryRepository : IWorkEntryRepository
                                  FROM WorkEntries workEntry
                                  JOIN Users us ON workEntry.UserId = us.Id
                                  ORDER BY workEntry.StartDateTime DESC
+                                 OFFSET @OffsetItems ROWS
+                                 FETCH NEXT @FetchItems ROWS ONLY
                                  """;
+        
 
         var permissionUtils = new PermissionUtils();
         var workEntryDictionary = new Dictionary<int, WorkEntry>();
@@ -91,9 +95,14 @@ public class WorkEntryRepository : IWorkEntryRepository
             }
 
             return currentWorkEntry;
+        }, new
+        {
+            OffsetItems = Pages.ElementsOnPage * --page,
+            FetchItems = Pages.ElementsOnPage
         }, splitOn: "UserId");
 
-        return workEntryDictionary.Values.ToList();
+        var totalPages = await GetPageCount();
+        return (workEntryDictionary.Values.ToList(), totalPages);
     }
 
     public async Task<WorkEntry> Create(WorkEntry obj)
@@ -160,5 +169,25 @@ public class WorkEntryRepository : IWorkEntryRepository
         var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { Date = date, UserId = userId });
 
         return workEntries;
+    }
+
+    private async Task<int> GetTotalReconds()
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        const string slqQuery = $"""
+                                 SELECT COUNT(*) FROM WorkEntries
+                                 """;
+
+        var totalCount = await dbConnection.QueryFirstAsync<int>(slqQuery);
+
+        return totalCount;
+    }
+    
+    private async Task<int> GetPageCount()
+    {
+        var totalRecords = await GetTotalReconds();
+        int totalPages = (int)Math.Ceiling(totalRecords / (double)Pages.ElementsOnPage);
+
+        return totalPages;
     }
 }
