@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Dapper;
 using Microsoft.IdentityModel.Tokens;
+using TimeTracker.Constants;
 using TimeTracker.Data;
 using TimeTracker.Dtos;
 using TimeTracker.Factories;
@@ -54,13 +55,21 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<IEnumerable<User>> GetAll()
+    public async Task<(IEnumerable<User> Entities, int PagesCount)> GetAll(int? page = 1)
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Id, Email, FirstName, LastName, Permissions, IsActive FROM Users
+                                 SELECT Id, Email, FirstName, LastName, Permissions, IsActive 
+                                 FROM Users
+                                 ORDER BY Id
+                                 OFFSET @OffsetItems ROWS
+                                 FETCH NEXT @FetchItems ROWS ONLY
                                  """;
-        var usersDto = await dbConnection.QueryAsync<UserDto>(sqlQuery);
+        var usersDto = await dbConnection.QueryAsync<UserDto>(sqlQuery, new
+        {
+            OffsetItems = Pages.ElementsOnPage * --page,
+            FetchItems = Pages.ElementsOnPage
+        });
 
         var permissionUtils = new PermissionUtils();
         var users = usersDto.Select(dto => new User
@@ -72,8 +81,9 @@ public class UserRepository : IUserRepository
             IsActive = dto.IsActive,
             Permissions = permissionUtils.DeserializePermissions(dto.Permissions)
         }).ToList();
-
-        return users;
+        var totalPages = await GetPageCount();
+        
+        return (users, totalPages);
     }
 
     public async Task<User> Create(User user)
@@ -258,5 +268,25 @@ public class UserRepository : IUserRepository
         await dbConnection.ExecuteAsync(sqlQuery, user);
 
         return true;
+    }
+    
+    private async Task<int> GetTotalReconds()
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        const string slqQuery = $"""
+                                 SELECT COUNT(*) FROM Users
+                                 """;
+
+        var totalCount = await dbConnection.QueryFirstAsync<int>(slqQuery);
+
+        return totalCount;
+    }
+    
+    private async Task<int> GetPageCount()
+    {
+        var totalRecords = await GetTotalReconds();
+        int totalPages = (int)Math.Ceiling(totalRecords / (double)Pages.ElementsOnPage);
+
+        return totalPages;
     }
 }

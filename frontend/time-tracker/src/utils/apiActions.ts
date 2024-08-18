@@ -21,6 +21,7 @@ export const fetchGraphQl = async (body: {
         | { userId: number, teamId?: number }
         | { date: string; userId?: number }
         | { password: string, newPassword: string }
+        | { page: number }
 }) => {
     const response = await fetch(config.API_ENDPOINT, {
         method: "POST",

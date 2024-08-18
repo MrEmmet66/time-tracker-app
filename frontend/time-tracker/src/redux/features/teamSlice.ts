@@ -20,11 +20,11 @@ const workEntrySlice = createSlice({
         getTeamsSuccess: (
             state,
             action: PayloadAction<{
-                teams: ITeam[];
+                teams: { entities: ITeam[]; totalPages: number };
                 error: string;
             }>
         ) => {
-            state.teams = action.payload.teams;
+            state.teams = action.payload.teams.entities;
             state.error = null;
         },
         getTeamByIdSuccess: (

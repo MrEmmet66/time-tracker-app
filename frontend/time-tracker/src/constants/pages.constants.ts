@@ -5,3 +5,5 @@ export const enum PAGES {
     USERS = "/users",
     TEAMS = "/teams"
 }
+
+export const ELEMENTS_ON_PAGE = 10;

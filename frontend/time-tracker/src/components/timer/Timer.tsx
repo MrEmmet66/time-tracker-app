@@ -1,4 +1,3 @@
-import {useState, useEffect} from "react";
 import {Button, Flex, Typography} from "antd";
 import {
     PlayCircleFilled,
@@ -7,44 +6,32 @@ import {
 } from "@ant-design/icons";
 import {convertSecondsToTime, formatTimeToString} from "../../utils/time";
 import {useDispatch} from "react-redux";
+import useTimer from "../../hooks/use-timer";
 
 const {Title} = Typography;
 
-const Timer = () => {
-    const [startDateTime, setStartDateTime] = useState<Date>();
-    const [totalSeconds, setTotalSeconds] = useState(0);
-    const [isPause, setPause] = useState(true);
+interface IProps {
+    isInHeader?: boolean;
+}
+
+const Timer = ({isInHeader = false}: IProps) => {
+    const {totalSeconds, isPause, startDateTime, pause, reset} =
+        useTimer();
 
     const dispatch = useDispatch();
-
-    useEffect(() => {
-        let timerInterval: number;
-        if (!isPause) {
-            timerInterval = setInterval(() => {
-                setTotalSeconds((prevTime) => prevTime + 1);
-            }, 1000);
-        }
-
-        return () => clearInterval(timerInterval);
-    }, [isPause]);
 
     const {hours, minutes, seconds} = convertSecondsToTime(totalSeconds);
 
     const handlePauseClick = () => {
-        if (totalSeconds === 0) {
-            setStartDateTime(new Date());
-        }
-
-        setPause(!isPause);
+        pause(!isPause);
     };
 
     const handleResetTimer = () => {
-        setPause(true);
-        setTotalSeconds(0);
+        reset();
     };
 
     const handleSubmit = () => {
-        setPause(true);
+        pause(true);
 
         if (!startDateTime) return;
 
@@ -58,12 +45,15 @@ const Timer = () => {
                 endDateTime: endDateTime.toISOString(),
             },
         });
-        setTotalSeconds(0);
+        handleResetTimer();
     };
 
     return (
-        <Flex vertical gap={4} justify="center">
-            <Title className="!text-6xl">
+        <Flex
+            className={isInHeader ? "flex-row gap-4" : "flex-col gap-2"}
+            justify="center"
+        >
+            <Title className={isInHeader ? "!text-3xl !m-0" : "!text-6xl"}>
                 {formatTimeToString(hours, minutes, seconds)}
             </Title>
             <Flex
@@ -72,12 +62,15 @@ const Timer = () => {
                 align="center"
             >
                 {totalSeconds > 0 && (
-                    <Button className="text-lg" onClick={handleResetTimer}>
+                    <Button
+                        className={isInHeader ? "text-base" : "text-lg"}
+                        onClick={handleResetTimer}
+                    >
                         Reset
                     </Button>
                 )}
                 <Button
-                    className="p-2 h-16 w-16 rounded-full"
+                    className={`p-2 rounded-full ${isInHeader ? "h-8 w-8" : "h-16 w-16"}`}
                     onClick={handlePauseClick}
                 >
                     {isPause ? (
@@ -87,7 +80,12 @@ const Timer = () => {
                     )}
                 </Button>
                 {totalSeconds > 0 && (
-                    <Button className="p-4 h-16 w-16 rounded-full" onClick={handleSubmit}>
+                    <Button
+                        className={`rounded-full ${
+                            isInHeader ? "p-2 h-8 w-8" : "p-4 h-16 w-16"
+                        }`}
+                        onClick={handleSubmit}
+                    >
                         <BorderOutlined className="w-full h-full [&>svg]:w-full [&>svg]:h-full"/>
                     </Button>
                 )}

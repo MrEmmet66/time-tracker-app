@@ -1,33 +1,29 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Modal, Form, Input, Select, Button} from 'antd';
 import {User} from '../../models/user.ts';
 import {permissions} from '../../constants/permissions.constants.ts';
-import {useDispatch} from 'react-redux';
 
 interface UserEditModalProps {
     visible: boolean;
     user: User;
     onSave: (user: User) => void;
     onCancel: () => void;
+    onUpdatePermission: (values: any) => void
 }
 
-const UserEditModal: React.FC<UserEditModalProps> = ({visible, user, onSave, onCancel}) => {
+const UserEditModal: React.FC<UserEditModalProps> = ({visible, user, onCancel, onUpdatePermission}) => {
     const [form] = Form.useForm();
-    const dispatch = useDispatch();
 
     const userPermissions = user.permissions.map(permissionKey => {
         const permission = permissions.find(p => p.key === permissionKey.name);
         return permission ? permission.key : null;
     }).filter(Boolean);
 
-    const handleFinish = (values: any) => {
-        const updatedUser: User = {
-            ...user,
-            permissions: values.permissions
-        };
-
-        dispatch({type: 'UPDATE_PERMISSIONS', payload: {id: user.id, permissions: values.permissions}});
-    };
+    useEffect(() => {
+        form.setFieldsValue({
+            permissions: userPermissions
+        });
+    }, [user, form, userPermissions]);
 
     return (
         <Modal
@@ -49,7 +45,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({visible, user, onSave, onC
                 initialValues={{
                     permissions: userPermissions
                 }}
-                onFinish={handleFinish}
+                onFinish={onUpdatePermission}
             >
                 <Form.Item label="Email">
                     <Input value={user.email} disabled/>

@@ -18,7 +18,7 @@ const LayoutPage = ({children}: IProps) => {
     return (
         <Layout>
             <Sidebar/>
-            <Layout>
+            <Layout className="bg-gray-50">
                 <Header user={user}/>
                 <Content className="my-20 mx-12">{children}</Content>
             </Layout>

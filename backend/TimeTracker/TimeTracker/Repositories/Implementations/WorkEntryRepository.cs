@@ -1,4 +1,5 @@
 using Dapper;
+using TimeTracker.Constants;
 using TimeTracker.Data;
 using TimeTracker.Dtos;
 using TimeTracker.Models;
@@ -61,7 +62,7 @@ public class WorkEntryRepository : IWorkEntryRepository
         return workEntry;
     }
 
-    public async Task<IEnumerable<WorkEntry>> GetAll()
+    public async Task<(IEnumerable<WorkEntry> Entities, int PagesCount)> GetAll(int? page = 1)
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
@@ -69,7 +70,10 @@ public class WorkEntryRepository : IWorkEntryRepository
                                  FROM WorkEntries workEntry
                                  JOIN Users us ON workEntry.UserId = us.Id
                                  ORDER BY workEntry.StartDateTime DESC
+                                 OFFSET @OffsetItems ROWS
+                                 FETCH NEXT @FetchItems ROWS ONLY
                                  """;
+
 
         var permissionUtils = new PermissionUtils();
         var workEntryDictionary = new Dictionary<int, WorkEntry>();
@@ -91,9 +95,16 @@ public class WorkEntryRepository : IWorkEntryRepository
             }
 
             return currentWorkEntry;
+        }, new
+        {
+            OffsetItems = Pages.ElementsOnPage * --page,
+            FetchItems = Pages.ElementsOnPage
         }, splitOn: "UserId");
 
-        return workEntryDictionary.Values.ToList();
+        var totalRecords = await GetTotalRecords(null);
+        var totalPages = GetPageCount(totalRecords);
+
+        return (workEntryDictionary.Values.ToList(), totalPages);
     }
 
     public async Task<WorkEntry> Create(WorkEntry obj)
@@ -120,18 +131,27 @@ public class WorkEntryRepository : IWorkEntryRepository
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<WorkEntry>> GetByUserId(int userId)
+    public async Task<(IEnumerable<WorkEntry> Entities, int TotalPage)> GetByUserId(int userId, int? page = 1)
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
                                  SELECT * FROM WorkEntries
                                  WHERE UserId=@UserId
                                  ORDER BY StartDateTime DESC
+                                 OFFSET @OffsetItems ROWS
+                                 FETCH NEXT @FetchItems ROWS ONLY
                                  """;
 
-        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { UserId = userId });
+        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new
+        {
+            UserId = userId,
+            OffsetItems = Pages.ElementsOnPage * --page,
+            FetchItems = Pages.ElementsOnPage
+        });
+        var totalRecords = await GetTotalRecords(userId);
+        var totalPages = GetPageCount(totalRecords);
 
-        return workEntries;
+        return (workEntries, totalPages);
     }
 
     public async Task<IEnumerable<WorkEntry>> GetByDate(DateTime date)
@@ -160,5 +180,23 @@ public class WorkEntryRepository : IWorkEntryRepository
         var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { Date = date, UserId = userId });
 
         return workEntries;
+    }
+
+    private async Task<int> GetTotalRecords(int? userId)
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        string slqQuery = $"""
+                           SELECT COUNT(*) 
+                           FROM WorkEntries
+                           """ + (userId.HasValue ? " WHERE UserId=@UserId" : "");
+
+        var totalCount = await dbConnection.QueryFirstAsync<int>(slqQuery, new {userId=userId});
+
+        return totalCount;
+    }
+
+    private int GetPageCount(int totalRecords)
+    {
+        return (int)Math.Ceiling(totalRecords / (double)Pages.ElementsOnPage);
     }
 }

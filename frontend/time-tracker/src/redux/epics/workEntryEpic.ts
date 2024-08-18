@@ -25,21 +25,24 @@ const getWorkEntries = (action$: Observable<any>) =>
             switchMap(() =>
                 fetchGraphQl({
                     query: `query WorkEntries {
-                workEntries {
-                    id
-                    startDateTime
-                    endDateTime
-                    user {
-                        id
-                        email
-                        firstName
-                        lastName
-                        permissions {
-                            name
+                        workEntries {
+                            entities{
+                                id
+                                startDateTime
+                                endDateTime
+                                user {
+                                    id
+                                    email
+                                    firstName
+                                    lastName
+                                    permissions {
+                                        name
+                                    }
+                                }
+                            }
+                            totalPages
                         }
-                    }
-                }
-            }`,
+                    }`,
                 })
             )
         )
@@ -52,17 +55,21 @@ const getWorkEntriesByUserId = (action$: Observable<any>) =>
     action$
         .pipe(
             ofType("GET_WORK_ENTRIES_BY_USER_ID"),
-            switchMap((action: { payload: { userId: number } }) =>
+            switchMap((action: { payload: { userId: number, page?: number } }) =>
                 fetchGraphQl({
-                    query: `query WorkEntriesByUserId ($userId: ID!) {
-              workEntriesByUserId(userId: $userId) {
-                id
-                startDateTime
-                endDateTime
-              }
-            }`,
+                    query: `query WorkEntriesByUserId ($userId: ID!, $page: Int) {
+                        workEntriesByUserId(userId: $userId, page: $page) {
+                            entities {
+                                id
+                                startDateTime
+                                endDateTime
+                            }
+                            totalPages
+                        }
+                    }`,
                     variables: {
                         userId: action.payload.userId,
+                        page: action.payload.page ?? 1,
                     },
                 })
             )

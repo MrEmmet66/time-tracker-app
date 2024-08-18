@@ -1,4 +1,4 @@
-import {Button, Card, Form, Input, Typography} from "antd";
+import {Button, Card, Flex, Form, Input, Typography} from "antd";
 import LayoutPage from "../../layouts/LayoutPage";
 import {useDispatch} from "react-redux";
 import {useEffect} from "react";
@@ -36,18 +36,6 @@ const ProfilePage = () => {
         });
     }, []);
 
-    const handleSubmitProfile = (values: any) => {
-        if (!user?.id) return;
-
-        dispatch({
-            type: "UPDATE_USER",
-            payload: {
-                id: user.id,
-                ...values,
-            },
-        });
-    };
-
     const handleChangePassword = (values: any) => {
         dispatch({type: "CHANGE_PASSWORD", payload: values});
     };
@@ -62,45 +50,35 @@ const ProfilePage = () => {
                     <Form
                         className="my-10 grid grid-cols-2 gap-4"
                         initialValues={initialValues}
-                        onFinish={handleSubmitProfile}
                         form={form}
                     >
                         <Title level={4}>Profile</Title>
-                        <div>
-                            <Form.Item
-                                name="email"
-                                rules={[
-                                    {required: true, message: "Please input your Email!"},
-                                ]}
-                            >
-                                <Input placeholder="Email" name="email" size="middle"/>
+                        <Flex vertical gap={16}>
+                            <Form.Item name="email" label="Email" layout="vertical">
+                                <Input
+                                    placeholder="Email"
+                                    name="email"
+                                    size="middle"
+                                    disabled
+                                />
                             </Form.Item>
-                            <Form.Item
-                                name="firstName"
-                                rules={[
-                                    {required: true, message: "Please input your First Name!"},
-                                ]}
-                            >
+                            <Form.Item name="firstName" label="First Name" layout="vertical">
                                 <Input
                                     placeholder="First name"
                                     name="firstName"
                                     size="middle"
+                                    disabled
                                 />
                             </Form.Item>
-                            <Form.Item
-                                name="lastName"
-                                rules={[
-                                    {required: true, message: "Please input your Last Name!"},
-                                ]}
-                            >
-                                <Input placeholder="Last name" name="lastName" size="middle"/>
+                            <Form.Item name="lastName" label="Last Name" layout="vertical">
+                                <Input
+                                    placeholder="Last name"
+                                    name="lastName"
+                                    size="middle"
+                                    disabled
+                                />
                             </Form.Item>
-                            <Form.Item className="flex justify-end">
-                                <Button type="primary" htmlType="submit" size="middle">
-                                    Update
-                                </Button>
-                            </Form.Item>
-                        </div>
+                        </Flex>
                     </Form>
                     <Form
                         className="my-10 grid grid-cols-2 gap-4"
@@ -109,12 +87,14 @@ const ProfilePage = () => {
                         form={changePasswordForm}
                     >
                         <Title level={4}>Change password</Title>
-                        <div>
+                        <Flex vertical gap={16}>
                             <Form.Item
                                 name="password"
                                 rules={[
                                     {required: true, message: "Please input your password!"},
                                 ]}
+                                label="Password"
+                                layout="vertical"
                             >
                                 <Input
                                     placeholder="Current password"
@@ -131,6 +111,8 @@ const ProfilePage = () => {
                                         message: "Please input your new password!",
                                     },
                                 ]}
+                                label="New Password"
+                                layout="vertical"
                             >
                                 <Input
                                     placeholder="New Password"
@@ -142,6 +124,8 @@ const ProfilePage = () => {
                             <Form.Item
                                 name="confirmPassword"
                                 dependencies={["newPassword"]}
+                                label="Confirm Password"
+                                layout="vertical"
                                 hasFeedback
                                 rules={[
                                     {required: true, message: "Please confirm your password!"},
@@ -169,7 +153,7 @@ const ProfilePage = () => {
                                     Change
                                 </Button>
                             </Form.Item>
-                        </div>
+                        </Flex>
                     </Form>
                 </Card>
             )}

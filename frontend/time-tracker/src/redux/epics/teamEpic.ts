@@ -13,23 +13,29 @@ const getTeams = (action$: Observable<any>) =>
     action$
         .pipe(
             ofType("GET_TEAMS"),
-            switchMap(() =>
+            switchMap((action: { payload: { page?: number } }) =>
                 fetchGraphQl({
-                    query: `query Teams {
-                teams {
-                    id
-                    name
-                    members {
-                        id
-                        firstName
-                        lastName
-                        email
-                        permissions {
-                            name
+                    query: `query Teams ($page: Int) {
+                        teams (page: $page) {
+                            entities {
+                                id
+                                name
+                                members {
+                                    id
+                                    firstName
+                                    lastName
+                                    email
+                                    permissions {
+                                        name
+                                    }
+                                }
+                            }
+                            totalPages
                         }
+                    }`,
+                    variables: {
+                        page: action.payload?.page ?? 1
                     }
-                }
-            }`,
                 })
             )
         )
@@ -45,20 +51,20 @@ const getTeamById = (action$: Observable<any>) =>
             switchMap((action: { payload: { id: number } }) =>
                 fetchGraphQl({
                     query: `query TeamById ($id: ID!) {
-              team(id: $id) {
-                    id
-                    name
-                    members {
-                        id
-                        firstName
-                        lastName
-                        email
-                        permissions {
-                            name
-                        }
-                    }
-                }
-            }`,
+                        team(id: $id) {
+                                id
+                                name
+                                members {
+                                    id
+                                    firstName
+                                    lastName
+                                    email
+                                    permissions {
+                                        name
+                                    }
+                                }
+                            }
+                        }`,
                     variables: {
                         id: action.payload.id,
                     },
@@ -77,11 +83,11 @@ const createTeam = (action$: Observable<any>) =>
             switchMap((action: { payload: ITeamCreate }) =>
                 fetchGraphQl({
                     query: `mutation CreateTeam ($name: String!) {
-                createTeam(name: $name){
-                    id
-                    name
-                }
-            }`,
+                        createTeam(name: $name){
+                            id
+                            name
+                        }
+                    }`,
                     variables: {
                         name: action.payload.name,
                     },
@@ -100,19 +106,19 @@ const addUserToTeam = (action$: Observable<any>) =>
             switchMap((action: { payload: { teamId: number, userId: number } }) =>
                 fetchGraphQl({
                     query: `mutation AddUserToTeam ($teamId: ID! $userId: ID!) {
-                      addUserToTeam(teamId: $teamId, userId: $userId){
-                        id
-                        name
-                        members {
+                        addUserToTeam(teamId: $teamId, userId: $userId){
                             id
-                            email
-                            firstName
-                            lastName
-                            permissions {
-                                name
+                            name
+                            members {
+                                id
+                                email
+                                firstName
+                                lastName
+                                permissions {
+                                    name
+                                }
                             }
                         }
-                      }
                     }`,
                     variables: {
                         teamId: action.payload.teamId,
