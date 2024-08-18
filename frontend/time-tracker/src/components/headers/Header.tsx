@@ -16,7 +16,7 @@ const Header = ({user}: IProps) => {
     const location = useLocation();
 
     return (
-        <HD className="px-12 bg-zinc-100">
+        <HD className="px-12 bg-gray-50">
             <div className="h-full flex justify-between items-center border-b border-zinc-400">
                 <div className="text-2xl">
                     <Link to={PAGES.HOME}>Time Tracker</Link>

@@ -50,17 +50,24 @@ public class WorkEntryQuery : ObjectGraphType
                 }
             });
 
-        Field<ListGraphType<WorkEntryType>>(
+        Field<EntitiesResultType<WorkEntryType>>(
                 "workEntriesByUserId"
-            ).Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "userId" }))
+            ).Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "userId" },
+                new QueryArgument<IntGraphType> { Name = "page" }))
             .ResolveAsync(
                 async context =>
                 {
                     try
                     {
                         var userId = context.GetArgument<int>("userId");
+                        var page = context.GetArgument<int?>("page") ?? 1;
+                        var (workEntries, totalPages) = await repository.GetByUserId(userId, page);
 
-                        return await repository.GetByUserId(userId);
+                        return new
+                        {
+                            Entities = workEntries,
+                            TotalPages = totalPages
+                        };
                     }
                     catch (Exception ex)
                     {

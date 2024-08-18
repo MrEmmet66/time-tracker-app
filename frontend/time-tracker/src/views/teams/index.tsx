@@ -21,7 +21,7 @@ const TeamsPage = () => {
     ]);
 
     useEffect(() => {
-        dispatch({type: "GET_ALL_USERS"});
+        dispatch({type: "GET_ALL_USERS", payload: {page: 1}});
         dispatch({type: "GET_TEAMS"});
     }, []);
 
@@ -33,8 +33,6 @@ const TeamsPage = () => {
         dispatch({type: "CREATE_TEAM", payload: values});
         handleCloseModel();
     };
-
-    console.log({teams});
 
     return (
         <LayoutPage>

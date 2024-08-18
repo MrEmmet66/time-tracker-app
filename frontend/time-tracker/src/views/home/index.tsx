@@ -8,14 +8,14 @@ import {RootState} from "../../redux/store.ts";
 import LayoutPage from "../../layouts/LayoutPage.tsx";
 import Timer from "../../components/timer/Timer.tsx";
 import {PAGES} from "../../constants/pages.constants.ts";
-import {convertSecondsToTime, formatTimeToString} from "../../utils/time.ts";
 import {jwtDecode} from "jwt-decode";
 import {getToken} from "../../utils/token.ts";
+import WorkEntriesTable from "../../components/work-entries/WorkEntriesTable.tsx";
 
 function Index() {
     const [date, setDate] = useState<Dayjs | null>(null);
     const {user} = useSelector((state: RootState) => state.auth);
-    const {workEntries, error} = useSelector(
+    const {workEntries, error, totalPages} = useSelector(
         (state: RootState) => state.workEntry
     );
 
@@ -35,7 +35,7 @@ function Index() {
             return;
         }
 
-        dispatch({type: "GET_USER_BY_ID", payload: {id: user.id}})
+        dispatch({type: "GET_USER_BY_ID", payload: {id: user.id}});
 
         if (date) {
             dispatch({
@@ -50,7 +50,7 @@ function Index() {
         }
     }, [user, date]);
 
-    console.log({user, workEntries, error});
+    console.log({user, workEntries, error, totalPages});
 
     return (
         <LayoutPage>
@@ -62,28 +62,13 @@ function Index() {
                     <DatePicker size="middle" onChange={setDate}/>
                 </div>
                 <div className="mt-10 mb-5 space-y-4">
-                    {workEntries?.map((workEntry) => {
-                        const startDateTime = new Date(workEntry.startDateTime);
-                        const endDateTime = new Date(workEntry.endDateTime);
-                        const totalSeconds =
-                            (endDateTime.getTime() - startDateTime.getTime()) / 1000;
-                        const {hours, minutes} = convertSecondsToTime(totalSeconds);
-
-                        return (
-                            <div
-                                key={workEntry.id}
-                                className="px-4 py-2 grid grid-cols-2 border border-zinc-400 rounded-md divide-x divide-zinc-400"
-                            >
-                                <div className="px-2">
-                                    <p>Start: {startDateTime.toLocaleString()}</p>
-                                    <p>End: {endDateTime.toLocaleString()}</p>
-                                </div>
-                                <div className="px-2">
-                                    <p>Total: {formatTimeToString(hours, minutes)}</p>
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {workEntries && user && (
+                        <WorkEntriesTable
+                            workEntries={workEntries}
+                            userId={user.id}
+                            totalPages={totalPages}
+                        />
+                    )}
                 </div>
             </div>
         </LayoutPage>

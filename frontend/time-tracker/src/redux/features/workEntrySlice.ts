@@ -4,11 +4,13 @@ import {IWorkEntry} from "../../models/work-entry";
 export interface WorkEntryState {
     error: string | null;
     workEntries: IWorkEntry[] | null;
+    totalPages: number | null
 }
 
 const initialState: WorkEntryState = {
     error: null,
     workEntries: null,
+    totalPages: 1
 };
 
 const workEntrySlice = createSlice({
@@ -18,11 +20,15 @@ const workEntrySlice = createSlice({
         getWorkEntriesSuccess: (
             state,
             action: PayloadAction<{
-                workEntries: IWorkEntry[];
+                workEntries: {
+                    entities: IWorkEntry[];
+                    totalPages: number
+                }
                 error: string;
             }>
         ) => {
-            state.workEntries = action.payload.workEntries;
+            state.workEntries = action.payload.workEntries.entities;
+            state.totalPages = action.payload.workEntries.totalPages;
             state.error = null;
         },
         getWorkEntriesFailed: (state, action: PayloadAction<string>) => {
@@ -31,11 +37,15 @@ const workEntrySlice = createSlice({
         getWorkEntriesByUserIdSuccess: (
             state,
             action: PayloadAction<{
-                workEntriesByUserId: IWorkEntry[];
+                workEntriesByUserId: {
+                    entities: IWorkEntry[];
+                    totalPages: number
+                }
             }>
         ) => {
             state.error = null;
-            state.workEntries = action.payload.workEntriesByUserId;
+            state.workEntries = action.payload.workEntriesByUserId.entities;
+            state.totalPages = action.payload.workEntriesByUserId.totalPages;
         },
         getWorkEntriesByDateSuccess: (
             state,
@@ -46,6 +56,7 @@ const workEntrySlice = createSlice({
             console.log(action.payload);
             state.error = null;
             state.workEntries = action.payload?.workEntriesByDate || [];
+            state.totalPages = null;
         },
     },
 });

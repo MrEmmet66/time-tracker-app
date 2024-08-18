@@ -73,7 +73,7 @@ public class WorkEntryRepository : IWorkEntryRepository
                                  OFFSET @OffsetItems ROWS
                                  FETCH NEXT @FetchItems ROWS ONLY
                                  """;
-        
+
 
         var permissionUtils = new PermissionUtils();
         var workEntryDictionary = new Dictionary<int, WorkEntry>();
@@ -101,7 +101,9 @@ public class WorkEntryRepository : IWorkEntryRepository
             FetchItems = Pages.ElementsOnPage
         }, splitOn: "UserId");
 
-        var totalPages = await GetPageCount();
+        var totalRecords = await GetTotalRecords(null);
+        var totalPages = GetPageCount(totalRecords);
+
         return (workEntryDictionary.Values.ToList(), totalPages);
     }
 
@@ -129,18 +131,27 @@ public class WorkEntryRepository : IWorkEntryRepository
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<WorkEntry>> GetByUserId(int userId)
+    public async Task<(IEnumerable<WorkEntry> Entities, int TotalPage)> GetByUserId(int userId, int? page = 1)
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
                                  SELECT * FROM WorkEntries
                                  WHERE UserId=@UserId
                                  ORDER BY StartDateTime DESC
+                                 OFFSET @OffsetItems ROWS
+                                 FETCH NEXT @FetchItems ROWS ONLY
                                  """;
 
-        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { UserId = userId });
+        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new
+        {
+            UserId = userId,
+            OffsetItems = Pages.ElementsOnPage * --page,
+            FetchItems = Pages.ElementsOnPage
+        });
+        var totalRecords = await GetTotalRecords(userId);
+        var totalPages = GetPageCount(totalRecords);
 
-        return workEntries;
+        return (workEntries, totalPages);
     }
 
     public async Task<IEnumerable<WorkEntry>> GetByDate(DateTime date)
@@ -171,23 +182,21 @@ public class WorkEntryRepository : IWorkEntryRepository
         return workEntries;
     }
 
-    private async Task<int> GetTotalReconds()
+    private async Task<int> GetTotalRecords(int? userId)
     {
         var dbConnection = _dataContext.CreateConnection();
-        const string slqQuery = $"""
-                                 SELECT COUNT(*) FROM WorkEntries
-                                 """;
+        string slqQuery = $"""
+                           SELECT COUNT(*) 
+                           FROM WorkEntries
+                           """ + (userId.HasValue ? " WHERE UserId=@UserId" : "");
 
-        var totalCount = await dbConnection.QueryFirstAsync<int>(slqQuery);
+        var totalCount = await dbConnection.QueryFirstAsync<int>(slqQuery, new {userId=userId});
 
         return totalCount;
     }
-    
-    private async Task<int> GetPageCount()
-    {
-        var totalRecords = await GetTotalReconds();
-        int totalPages = (int)Math.Ceiling(totalRecords / (double)Pages.ElementsOnPage);
 
-        return totalPages;
+    private int GetPageCount(int totalRecords)
+    {
+        return (int)Math.Ceiling(totalRecords / (double)Pages.ElementsOnPage);
     }
 }
