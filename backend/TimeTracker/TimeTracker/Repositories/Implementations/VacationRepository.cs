@@ -110,6 +110,24 @@ public class VacationRepository : IVacationRepository
         return vacations.FirstOrDefault();
         
     }
+    
+    public async Task<IEnumerable<Vacation>> GetVacationsByPage(int pageNumber, int pageSize)
+    {
+        using var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
+                                 LEFT JOIN Users u on u.Id = UserId
+                                 ORDER BY StartVacation DESC
+                                 OFFSET @Offset ROWS
+                                 FETCH NEXT @PageSize ROWS ONLY
+                                 """;
+        var vacations = await dbConnection.QueryAsync<Vacation, User, Vacation>(sqlQuery, (vac, user) =>
+        {
+            vac.User = user;
+            return vac;
+        }, new { Offset = (pageNumber - 1) * pageSize, PageSize = pageSize }, splitOn:"UserId");
+        return vacations;
+    }
 
     public async Task<Vacation> ApproveVacation(int vacationId)
     {

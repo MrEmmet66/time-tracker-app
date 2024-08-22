@@ -47,6 +47,19 @@ public class VacationQuery : ObjectGraphType
                 return await vacationRepository.GetUserVacations(userId);
             }).Description("Get All Vacations of given User");
         
+        Field<ListGraphType<VacationType>>("vacationsByPage")
+            .Arguments(new QueryArguments(
+                new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "pageNumber" },
+                new QueryArgument<IntGraphType> { Name = "pageSize", DefaultValue = 20 }))
+            .ResolveAsync(async context =>
+            {
+                var pageNumber = context.GetArgument<int>("pageNumber");
+                var pageSize = context.GetArgument<int>("pageSize");
+                return await vacationRepository.GetVacationsByPage(pageNumber, pageSize);
+            }).Description("Get Vacations by page number and page size");
+
+        
+        
         Field<VacationType>("lastUserVacation")
             .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "userId" }))
             .ResolveAsync(async context =>

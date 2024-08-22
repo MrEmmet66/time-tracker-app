@@ -21,11 +21,13 @@ public class AppQuery : ObjectGraphType
         AddField(vacationQuery.GetField("vacation"));
         AddField(vacationQuery.GetField("userVacations"));
         AddField(vacationQuery.GetField("lastUserVacation"));
+        AddField(vacationQuery.GetField("vacationsByPage"));
         
         AddField(sickLeaveQuery.GetField("sickLeaves"));
         AddField(sickLeaveQuery.GetField("sickLeave"));
         AddField(sickLeaveQuery.GetField("userSickLeaves"));
         AddField(sickLeaveQuery.GetField("lastUserSickLeave"));
+        AddField(sickLeaveQuery.GetField("sickLeavesByPage"));
 
     }
 }
