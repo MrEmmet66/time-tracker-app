@@ -46,6 +46,17 @@ public class SickLeaveQuery : ObjectGraphType
                 return await sickLeaveRepository.GetUserSickLeaves(userId);
             }).Description("Get All Sick Leaves of given User");
         
+        Field<ListGraphType<SickLeaveType>>("sickLeavesByPage")
+            .Arguments(new QueryArguments(
+                new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "pageNumber" },
+                new QueryArgument<IntGraphType> { Name = "pageSize", DefaultValue = 20 }))
+            .ResolveAsync(async context =>
+            {
+                var pageNumber = context.GetArgument<int>("pageNumber");
+                var pageSize = context.GetArgument<int>("pageSize");
+                return await sickLeaveRepository.GetSickLeavesByPage(pageNumber, pageSize);
+            }).Description("Get Sick Leaves by page number and page size");
+        
         Field<SickLeaveType>("lastUserSickLeave")
             .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "userId" }))
             .ResolveAsync(async context =>

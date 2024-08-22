@@ -89,6 +89,24 @@ public class SickLeaveRepository : ISickLeaveRepository
             return sickLeave;
         }, splitOn:"UserId");
     }
+    
+    public async Task<IEnumerable<SickLeave>> GetSickLeavesByPage(int pageNumber, int pageSize)
+    {
+        using var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 SELECT SickLeave.Id, StartSickLeave, EndSickLeave, Reason, Status, UserId FROM SickLeave
+                                 LEFT JOIN Users u on u.Id = UserId
+                                 ORDER BY StartSickLeave DESC
+                                 OFFSET @Offset ROWS
+                                 FETCH NEXT @PageSize ROWS ONLY
+                                 """;
+        var sickLeaves = await dbConnection.QueryAsync<SickLeave, User, SickLeave>(sqlQuery, (sickLeave, user) =>
+        {
+            sickLeave.User = user;
+            return sickLeave;
+        }, new { Offset = (pageNumber - 1) * pageSize, PageSize = pageSize }, splitOn:"UserId");
+        return sickLeaves;
+    }
 
     public async Task<SickLeave> GetLastUserSickLeave(int userId)
     {
