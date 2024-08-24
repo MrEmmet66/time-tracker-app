@@ -1,8 +1,10 @@
 ﻿using Dapper;
 using TimeTracker.Constants;
 using TimeTracker.Data;
+using TimeTracker.Dtos;
 using TimeTracker.Models;
 using TimeTracker.Repositories.Infrastructure;
+using TimeTracker.Utils;
 
 namespace TimeTracker.Repositories.Implementations;
 
@@ -19,28 +21,47 @@ public class VacationRepository : IVacationRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId, u.* FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE Vacations.Id = @Id
                                  """;
-        var vacation = await dbConnection.QueryAsync<Vacation, User, Vacation>(sqlQuery, (vac, user) =>
+        var permissionUtils = new PermissionUtils();
+        var vacation = await dbConnection.QueryAsync<Vacation, UserDto, Vacation>(sqlQuery, (vac, user) =>
         {
-            vac.User = user;
+            vac.User = new User
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                Permissions = permissionUtils.DeserializePermissions(user.Permissions)
+            };
             return vac;
         }, new { Id = id }, splitOn:"UserId");
         return vacation.FirstOrDefault();
     }
-
+    
     public async Task<IEnumerable<Vacation>> GetAll()
     {
         using var dbConnection = _dataContext.CreateConnection();
+        var permissionUtils = new PermissionUtils();
         const string sqlQuery = $"""
-                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId, u.* FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  """;
-        var vacations = await dbConnection.QueryAsync<Vacation, User, Vacation>(sqlQuery, (vac, user) =>
+        var vacations = await dbConnection.QueryAsync<Vacation, UserDto, Vacation>(sqlQuery, (vac, user) =>
         {
-            vac.User = user;
+            
+            vac.User = new User
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                Permissions = permissionUtils.DeserializePermissions(user.Permissions)
+            };
             return vac;
         }, splitOn:"UserId");
         return vacations;
@@ -81,49 +102,74 @@ public class VacationRepository : IVacationRepository
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId, u.* FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE Vacations.UserId = @UserId
                                  """;
-        var vacations = await dbConnection.QueryAsync<Vacation, User, Vacation>(sqlQuery, (vac, user) =>
+        var permissionUtils = new PermissionUtils();
+        var vacations = await dbConnection.QueryAsync<Vacation, UserDto, Vacation>(sqlQuery, (vac, user) =>
         {
-            vac.User = user;
+            vac.User = new User
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                Permissions = permissionUtils.DeserializePermissions(user.Permissions)
+            };
             return vac;
         }, new { UserId = userId }, splitOn:"UserId");
         return vacations;
     }
-
     public async Task<Vacation> GetLastUserVacation(int userId)
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT TOP 1 Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
+                                 SELECT TOP 1 Vacations.Id, StartVacation, EndVacation, Status, UserId, u.* FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  WHERE UserId = @UserId
                                  ORDER BY StartVacation DESC
                                  """;
-        var vacations = await dbConnection.QueryAsync<Vacation, User, Vacation>(sqlQuery, (vac, user) =>
+        var permissionUtils = new PermissionUtils();
+        var vacations = await dbConnection.QueryAsync<Vacation, UserDto, Vacation>(sqlQuery, (vac, user) =>
         {
-            vac.User = user;
+            vac.User = new User
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                Permissions = permissionUtils.DeserializePermissions(user.Permissions)
+            };
             return vac;
         }, new { UserId = userId }, splitOn:"UserId");
         return vacations.FirstOrDefault();
-        
     }
     
     public async Task<IEnumerable<Vacation>> GetVacationsByPage(int pageNumber, int pageSize)
     {
         using var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
-                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId FROM Vacations
+                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId, u.* FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
                                  ORDER BY StartVacation DESC
                                  OFFSET @Offset ROWS
                                  FETCH NEXT @PageSize ROWS ONLY
                                  """;
-        var vacations = await dbConnection.QueryAsync<Vacation, User, Vacation>(sqlQuery, (vac, user) =>
+        var permissionUtils = new PermissionUtils();
+        var vacations = await dbConnection.QueryAsync<Vacation, UserDto, Vacation>(sqlQuery, (vac, user) =>
         {
-            vac.User = user;
+            vac.User = new User
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                Permissions = permissionUtils.DeserializePermissions(user.Permissions)
+            };
             return vac;
         }, new { Offset = (pageNumber - 1) * pageSize, PageSize = pageSize }, splitOn:"UserId");
         return vacations;
