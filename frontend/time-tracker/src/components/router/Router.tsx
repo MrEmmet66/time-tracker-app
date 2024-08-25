@@ -7,6 +7,7 @@ import ProfilePage from "../../views/profile";
 import UsersPage from "../../views/users/";
 import TeamsPage from "../../views/teams";
 import CalendarPage from "../../views/calendar";
+import UserCalendarPage from "../../views/users/calendar";
 
 const Router = () => {
     return (
@@ -18,6 +19,7 @@ const Router = () => {
                 <Route path={PAGES.USERS} element={<UsersPage/>}/>
                 <Route path={PAGES.TEAMS} element={<TeamsPage/>}/>
                 <Route path={PAGES.CALENDAR} element={<CalendarPage/>}/>
+                <Route path={"/users/:id/calendar"} element={<UserCalendarPage/>}/>
             </Routes>
         </BrowserRouter>
     );

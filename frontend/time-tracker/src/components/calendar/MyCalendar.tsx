@@ -16,9 +16,17 @@ import {SchedulerEvent} from "../../models/schedule";
 
 interface IProps {
     items?: SchedulerExistingEvent[];
+    disabled?: boolean;
+    currentMonth: number;
+    setCurrentMonth: (month: number) => void;
 }
 
-const MyCalendar = ({items}: IProps) => {
+const MyCalendar = ({
+                        currentMonth,
+                        items,
+                        disabled = false,
+                        setCurrentMonth,
+                    }: IProps) => {
     const [isOpenCreateModal, setOpenCreateModal] = useState(false);
     const [isOpenEditModal, setOpenEditModal] = useState(false);
     const [currentEvent, setCurrentEvent] = useState<SchedulerEvent | null>(null);
@@ -33,6 +41,14 @@ const MyCalendar = ({items}: IProps) => {
 
         setEvents(items);
     }, [items]);
+
+    useEffect(() => {
+        const month = selected.getMonth() + 1;
+
+        if (currentMonth !== month) {
+            setCurrentMonth(month);
+        }
+    }, [selected]);
 
     const handleEventCancel = () => {
         setOpenCreateModal(false);
@@ -66,7 +82,7 @@ const MyCalendar = ({items}: IProps) => {
         setOpenEditModal(false);
     };
 
-    console.log({events, items});
+    console.log({events, items, selected});
     const handleEventAdd = (evt: SchedulerEventType) => {
         setOpenCreateModal(true);
         setCurrentEvent(evt as SchedulerEvent);
@@ -105,8 +121,11 @@ const MyCalendar = ({items}: IProps) => {
                 events={events}
                 selected={selected}
                 setSelected={setSelected}
-                onRequestAdd={handleEventAdd}
-                onRequestEdit={handleEventEdit}
+                onRequestAdd={disabled ? () => {
+                } : handleEventAdd}
+                onRequestEdit={disabled ? () => {
+                } : handleEventEdit}
+                editable={!disabled}
             />
             {isOpenCreateModal && currentEvent && (
                 <ScheduleItemNew

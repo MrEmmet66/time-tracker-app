@@ -1,10 +1,11 @@
-import {Table, Tag} from "antd";
+import {Button, Table, Tag} from "antd";
 import type {TablePaginationConfig, TableProps} from "antd";
 import {User} from "../../models/user";
 import {useEffect, useMemo, useState} from "react";
 import {useDispatch} from "react-redux";
 import {ELEMENTS_ON_PAGE} from "../../constants/pages.constants";
 import UserEditModal from "./UserEditModal";
+import {Link} from "react-router-dom";
 
 interface IProps {
     users: User[];
@@ -50,6 +51,12 @@ const columns: TableProps<DataType>["columns"] = [
                 <Tag color={isActive ? "green" : "red"}>{isActive ? "Yes" : "No"}</Tag>
             </>
         ),
+    },
+    {
+        title: 'Action',
+        dataIndex: '',
+        key: 'action',
+        render: (_, {id}) => <Link to={`/users/${id}/calendar`}><Button>View Calendar</Button></Link>,
     },
 ];
 
