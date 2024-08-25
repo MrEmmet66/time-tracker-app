@@ -1,5 +1,6 @@
 import config from "../config/config.ts";
 import {IId} from "../models/base.ts";
+import {IScheduleItemCreate} from "../models/schedule.ts";
 import {ITeamCreate} from "../models/team.ts";
 import {
     IAuthUser,
@@ -22,6 +23,8 @@ export const fetchGraphQl = async (body: {
         | { date: string; userId?: number }
         | { password: string, newPassword: string }
         | { page: number }
+        | { month: number | null }
+        | IScheduleItemCreate
 }) => {
     const response = await fetch(config.API_ENDPOINT, {
         method: "POST",

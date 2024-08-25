@@ -30,6 +30,7 @@ builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IWorkEntryRepository, WorkEntryRepository>();
 builder.Services.AddScoped<IVacationRepository, VacationRepository>();
 builder.Services.AddScoped<ISickLeaveRepository, SickLeaveRepository>();
+builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 
 builder.Services.AddScoped<ISchema, AppSchema>();
 
