@@ -47,7 +47,8 @@ const authSlice = createSlice({
                     firstName: decodedToken.firstName,
                     lastName: decodedToken.lastName,
                     email: decodedToken.email,
-                    permissions: JSON.parse(decodedToken.permissions.toString())
+                    permissions: JSON.parse(decodedToken.permissions.toString()),
+                    isActive: decodedToken.isActive
                 };
                 state.jwtToken = action.payload;
                 state.error = null;

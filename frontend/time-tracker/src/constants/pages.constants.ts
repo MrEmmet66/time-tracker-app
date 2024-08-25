@@ -1,6 +1,7 @@
 export const enum PAGES {
     HOME = "/",
     LOGIN = "/login",
+    CALENDAR = "/calendar",
     PROFILE = "/profile",
     USERS = "/users",
     TEAMS = "/teams"

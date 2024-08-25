@@ -5,6 +5,7 @@ import authReducer from "./features/authSlice.ts";
 import usersSlice from "./features/usersSlice.ts";
 import teamReducer from "./features/teamSlice.ts";
 import workEntryReducer from "./features/workEntrySlice.ts";
+import scheduleReducer from "./features/scheduleSlice.ts";
 import {rootEpic} from "./epics/rootEpic.ts";
 
 const epicMiddleware = createEpicMiddleware();
@@ -14,6 +15,7 @@ const rootReducer = combineReducers({
     users: usersSlice,
     team: teamReducer,
     workEntry: workEntryReducer,
+    schedule: scheduleReducer
 });
 
 export const store = configureStore({
