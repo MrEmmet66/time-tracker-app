@@ -2,9 +2,17 @@ import {catchError, map, Observable, of, switchMap} from "rxjs";
 import {fetchGraphQl} from "../../utils/apiActions.ts";
 import {combineEpics, ofType} from "redux-observable";
 import {
+    approveVacationSuccess,
     createVacationApplicationError,
-    createVacationApplicationSuccess, getAllVacationsError, getAllVacationsSuccess,
-    getUserVacationsSuccess, getVacationsByPageError, getVacationsByPageSuccess
+    createVacationApplicationSuccess,
+    getAllVacationsError,
+    getAllVacationsSuccess,
+    getUserVacationsError,
+    getUserVacationsSuccess,
+    getVacationsByPageError,
+    getVacationsByPageSuccess,
+    rejectVacationSuccess,
+    vacationActionError
 } from "../features/vacationsSlice.ts";
 
 const createVacationApplication = (action$: Observable<any>) =>
@@ -54,7 +62,8 @@ const userVacations = (action$: Observable<any>) =>
                 },
             }))
     ).pipe(
-        map((response) => getUserVacationsSuccess(response.data))
+        map((response) => getUserVacationsSuccess(response.data)),
+        catchError((error) => of(getUserVacationsError(error.message)))
     );
 
 const allVacations = (action$: Observable<any>) =>
@@ -82,40 +91,83 @@ const allVacations = (action$: Observable<any>) =>
     ));
 
 
-const vacationsByPage = (action$: Observable<any>) => {
+const vacationsByPage = (action$: Observable<any>) =>
     action$.pipe(
         ofType('GET_VACATIONS_BY_PAGE'),
         switchMap((action) =>
-        fetchGraphQl({
-            query: `query GetVacationsPaged($pageNumber:Int!) {
-              vacationsByPage(pageNumber:$pageNumber pageSize:$pageSize) {
-                id
-                status
-                startVacation
-                endVacation
-                user {
-                  id
-                  firstName
-                  lastName
+            fetchGraphQl({
+                query: `query GetVacationsPaged($pageNumber:Int!) {
+                  vacationsByPage(pageNumber:$pageNumber pageSize:$pageSize) {
+                    id
+                    status
+                    startVacation
+                    endVacation
+                    user {
+                      id
+                      firstName
+                      lastName
+                    }
+                  }
+                }`,
+                variables: {
+                    pageNumber: action.payload.pageNumber,
                 }
-              }
-            }`,
-            variables: {
-                pageNumber: action.payload.pageNumber,
-                pageSize: action.payload.pageSize
-            }
-        }))
+            })
+        )
     ).pipe(
         map((response) => getVacationsByPageSuccess(response.data)),
-        catchError((error) => of(getVacationsByPageError(error.message))
+        catchError((error) => of(getVacationsByPageError(error.message))))
+
+const approveVacation = (action$: Observable<any>) =>
+    action$.pipe(
+        ofType('APPROVE_VACATION'),
+        switchMap((action) =>
+            fetchGraphQl({
+                query: `mutation ApproveVacation($id:ID!) {
+                  approveVacation(vacationId:$id) {
+                    id
+                    status
+                  }
+                }`,
+                variables: {
+                    id: action.payload.id
+                }
+            })
+        )
+    ).pipe(
+        map((response) => approveVacationSuccess(response.data)),
+        catchError((error) => of(vacationActionError(error.message))
     ));
-}
+
+const rejectVacation = (action$: Observable<any>) =>
+    action$.pipe(
+        ofType('REJECT_VACATION'),
+        switchMap((action) =>
+            fetchGraphQl({
+                query: `mutation RejectVacation($id:ID!) {
+                  rejectVacation(vacationId:$id) {
+                    id
+                    status
+                  }
+                }`,
+                variables: {
+                    id: action.payload.id
+                }
+            })
+        )
+    ).pipe(
+        map((response) => rejectVacationSuccess(response.data)),
+        catchError((error) => of(vacationActionError(error.message))
+    ));
+
 
 export default combineEpics(
     createVacationApplication,
     userVacations,
     allVacations,
-    vacationsByPage
+    vacationsByPage,
+    approveVacation,
+    rejectVacation,
 );
 
 
