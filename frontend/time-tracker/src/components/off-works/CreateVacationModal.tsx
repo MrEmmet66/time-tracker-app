@@ -12,8 +12,8 @@ const CreateVacationModal: React.FC<CreateVacationModalProps> = ({ visible, onCa
 
     const onFinish = (values: any) => {
         onCreate({
-            startVacation: values.startVacation.format('YYYY-MM-DD'),
-            endVacation: values.endVacation.format('YYYY-MM-DD'),
+            startVacation: values.startVacation.toISOString(),
+            endVacation: values.endVacation.toISOString(),
         });
         onCancel();
     };
