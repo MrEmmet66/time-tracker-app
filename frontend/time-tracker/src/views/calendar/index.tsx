@@ -20,14 +20,12 @@ const CalendarPage = () => {
         if (!user) {
             return;
         }
-        console.log("request")
+
         dispatch({
             type: "SCHEDULE_ITEMS",
             payload: {userId: user.id, month: currentMonth},
         });
     }, [user, currentMonth]);
-
-    console.log({schedules, user, test: splitEventsByDate(schedules)});
 
     const scheduleItems = useMemo(
         () =>

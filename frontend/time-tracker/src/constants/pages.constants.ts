@@ -3,8 +3,9 @@ export const enum PAGES {
     LOGIN = "/login",
     CALENDAR = "/calendar",
     PROFILE = "/profile",
+    TEAMS = "/teams",
     USERS = "/users",
-    TEAMS = "/teams"
+    USER_CALENDAR = "/users/:id/calendar"
 }
 
 export const ELEMENTS_ON_PAGE = 10;

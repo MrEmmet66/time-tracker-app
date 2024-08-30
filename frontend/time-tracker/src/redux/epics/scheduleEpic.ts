@@ -1,5 +1,12 @@
-import {combineEpics, ofType} from "redux-observable";
-import {catchError, map, Observable, of, switchMap} from "rxjs";
+import {combineEpics, ofType, StateObservable} from "redux-observable";
+import {
+    catchError,
+    map,
+    Observable,
+    of,
+    switchMap,
+    withLatestFrom,
+} from "rxjs";
 
 import {fetchGraphQl} from "../../utils/apiActions.ts";
 import {
@@ -8,6 +15,7 @@ import {
     schedulesSuccess,
 } from "../features/scheduleSlice.ts";
 import {IScheduleItemCreate, IScheduleItem} from "../../models/schedule.ts";
+import {RootState} from "../store.ts";
 
 const getScheduleItems = (action$: Observable<any>) =>
     action$
@@ -68,14 +76,14 @@ const createScheduleItem = (
         );
 
 const updateScheduleItem = (
-    action$: Observable<{ updateScheduleItem: IScheduleItem }>
+    action$: Observable<{ updateScheduleItem: IScheduleItem }>,
+    state$: StateObservable<RootState>
 ) =>
-    action$
-        .pipe(
-            ofType("UPDATE_SCHEDULE_ITEM"),
-            switchMap((action: { payload: IScheduleItem }) =>
-                fetchGraphQl({
-                    query: `mutation UpdateScheduleItem($id: ID!, $title: String!, $eventStart: DateTimeOffset!, $eventEnd: DateTimeOffset!, $description: String) {
+    action$.pipe(
+        ofType("UPDATE_SCHEDULE_ITEM"),
+        switchMap((action: { payload: IScheduleItem }) =>
+            fetchGraphQl({
+                query: `mutation UpdateScheduleItem($id: ID!, $title: String!, $eventStart: DateTimeOffset!, $eventEnd: DateTimeOffset!, $description: String) {
                     updateScheduleItem(id: $id, title: $title, eventStart: $eventStart, eventEnd: $eventEnd, description: $description){
                         id
                         title
@@ -84,37 +92,37 @@ const updateScheduleItem = (
                         eventEnd
                     }
                 }`,
-                    variables: {
-                        id: action.payload.id,
-                        title: action.payload.title,
-                        eventStart: action.payload.eventStart,
-                        eventEnd: action.payload.eventEnd,
-                        description: action.payload?.description ?? null,
-                    },
-                })
-            )
-        )
-        .pipe(
-            switchMap(([_, state]) => {
-                const userId = state.auth.user?.id;
-                if (userId) {
-                    return of({type: "SCHEDULE_ITEMS", payload: {userId}});
-                } else {
-                    return of(failed("User ID not found in state"));
-                }
-            }),
-            catchError((error) => of(failed(error.message)))
-        );
+                variables: {
+                    id: action.payload.id,
+                    title: action.payload.title,
+                    eventStart: action.payload.eventStart,
+                    eventEnd: action.payload.eventEnd,
+                    description: action.payload?.description ?? null,
+                },
+            })
+        ),
+        withLatestFrom(state$),
+        switchMap(([_, state]) => {
+            const userId = state.auth.user?.id;
+
+            if (userId) {
+                return of({type: "SCHEDULE_ITEMS", payload: {userId}});
+            } else {
+                return of(failed("User ID not found in state"));
+            }
+        }),
+        catchError((error) => of(failed(error.message)))
+    );
 
 const deleteScheduleItemById = (
-    action$: Observable<{ updateScheduleItem: IScheduleItem }>
+    action$: Observable<{ updateScheduleItem: IScheduleItem }>,
+    state$: StateObservable<RootState>
 ) =>
-    action$
-        .pipe(
-            ofType("DELETE_SCHEDULE_ITEM"),
-            switchMap((action: { payload: IScheduleItem }) =>
-                fetchGraphQl({
-                    query: `mutation DeleteScheduleItem($id: ID!) {
+    action$.pipe(
+        ofType("DELETE_SCHEDULE_ITEM"),
+        switchMap((action: { payload: IScheduleItem }) =>
+            fetchGraphQl({
+                query: `mutation DeleteScheduleItem($id: ID!) {
               deleteScheduleItem(id: $id) {
                 id
                 eventEnd
@@ -123,23 +131,23 @@ const deleteScheduleItemById = (
                 description
               }
             }`,
-                    variables: {
-                        id: action.payload.id,
-                    },
-                })
-            )
-        )
-        .pipe(
-            switchMap(([_, state]) => {
-                const userId = state.auth.user?.id;
-                if (userId) {
-                    return of({type: "SCHEDULE_ITEMS", payload: {userId}});
-                } else {
-                    return of(failed("User ID not found in state"));
-                }
-            }),
-            catchError((error) => of(failed(error.message)))
-        );
+                variables: {
+                    id: action.payload.id,
+                },
+            })
+        ),
+        withLatestFrom(state$),
+        switchMap(([_, state]) => {
+            const userId = state.auth.user?.id;
+
+            if (userId) {
+                return of({type: "SCHEDULE_ITEMS", payload: {userId}});
+            } else {
+                return of(failed("User ID not found in state"));
+            }
+        }),
+        catchError((error) => of(failed(error.message)))
+    );
 
 export default combineEpics(
     getScheduleItems,
