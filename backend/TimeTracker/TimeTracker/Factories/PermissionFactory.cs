@@ -8,7 +8,7 @@ public class PermissionFactory
     private static readonly Dictionary<string, Func<string, BasePermission>> _permissionCreators = new Dictionary<string, Func<string, BasePermission>>
     {
         // TODO fix the functionality of ApproveVacationPermission, or rather targetVacation
-        // { Permissions.ApproveVacations, name => new ApproveVacationPermission(name) }, 
+        { Permissions.ApproveVacations, name => new ApproveVacationPermission(name) }, 
         { Permissions.ApproveSickLeavesTeamMembers, name => new ApproveSickLeavesPermission(name) },
         { Permissions.ApproveSickLeavesAllMembers, name => new ApproveSickLeavesPermission(name) },
         { Permissions.ManageTeamMembers, name => new ManageUsersPermission(name) },

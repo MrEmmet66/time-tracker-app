@@ -6,4 +6,5 @@ public class Vacation
     public User User { get; set; }
     public DateTime StartVacation { get; set; }
     public DateTime EndVacation { get; set; }
+    public string Status { get; set; }
 }

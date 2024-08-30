@@ -34,6 +34,15 @@ const allMenuItems = [
             PERMISSIONS.MANAGE_TEAM_MEMBERS,
         ],
     },
+    {
+        key: "vacations",
+        label: <Link to={PAGES.VACATIONS}>My Vacations</Link>,
+    },
+    {
+        key: "all-vacations",
+        label: <Link to={PAGES.ALL_VACATIONS}>All Vacations</Link>,
+    },
+
 ];
 
 const Sidebar = () => {

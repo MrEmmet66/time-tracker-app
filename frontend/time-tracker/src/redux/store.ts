@@ -6,12 +6,14 @@ import usersSlice from "./features/usersSlice.ts";
 import teamReducer from "./features/teamSlice.ts";
 import workEntryReducer from "./features/workEntrySlice.ts";
 import {rootEpic} from "./epics/rootEpic.ts";
+import vacationsSlice from "./features/vacationsSlice.ts";
 
 const epicMiddleware = createEpicMiddleware();
 
 const rootReducer = combineReducers({
     auth: authReducer,
     users: usersSlice,
+    vacations: vacationsSlice,
     team: teamReducer,
     workEntry: workEntryReducer,
 });
