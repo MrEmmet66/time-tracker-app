@@ -24,7 +24,7 @@ const Router = () => {
                 <Route path={PAGES.USERS} element={<UsersPage/>}/>
                 <Route path={PAGES.TEAMS} element={<TeamsPage/>}/>
                 <Route path={PAGES.CALENDAR} element={<CalendarPage/>}/>
-                <Route path={"/users/:id/calendar"} element={<UserCalendarPage/>}/>
+                <Route path={PAGES.USER_CALENDAR} element={<UserCalendarPage/>}/>
             </Routes>
         </BrowserRouter>
     );

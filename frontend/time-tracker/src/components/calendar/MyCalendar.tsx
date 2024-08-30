@@ -31,15 +31,13 @@ const MyCalendar = ({
     const [isOpenEditModal, setOpenEditModal] = useState(false);
     const [currentEvent, setCurrentEvent] = useState<SchedulerEvent | null>(null);
     const [selected, setSelected] = useState(new Date());
-    const [events, setEvents, addEvent] = useArrayState(items ?? []);
+    const [events, setEvents] = useArrayState(items ?? []);
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (!items) {
-            return;
+        if (items) {
+            setEvents([...items]);
         }
-
-        setEvents(items);
     }, [items]);
 
     useEffect(() => {
@@ -82,7 +80,6 @@ const MyCalendar = ({
         setOpenEditModal(false);
     };
 
-    console.log({events, items, selected});
     const handleEventAdd = (evt: SchedulerEventType) => {
         setOpenCreateModal(true);
         setCurrentEvent(evt as SchedulerEvent);
@@ -118,6 +115,7 @@ const MyCalendar = ({
         <>
             <Calendar selected={selected} setSelected={setSelected}/>
             <Scheduler
+                key={JSON.stringify(events)}
                 events={events}
                 selected={selected}
                 setSelected={setSelected}

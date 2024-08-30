@@ -47,8 +47,6 @@ const ScheduleItemEdit = ({
             });
     };
 
-    console.log({event, eventStart, eventEnd});
-
     return (
         <Modal
             open={isOpen}
@@ -80,14 +78,28 @@ const ScheduleItemEdit = ({
                     label="Start event"
                     rules={[{required: true, message: "Please enter start event!"}]}
                 >
-                    <DatePicker value={eventStart} onChange={setEventStart} showTime/>
+                    <DatePicker
+                        disabledDate={(currentDate) =>
+                            currentDate && currentDate < dayjs().startOf("day")
+                        }
+                        value={eventStart}
+                        onChange={setEventStart}
+                        showTime
+                    />
                 </Form.Item>
                 <Form.Item
                     name="eventEnd"
                     label="End event"
                     rules={[{required: true, message: "Please enter end event!"}]}
                 >
-                    <DatePicker value={eventEnd} onChange={setEventEnd} showTime/>
+                    <DatePicker
+                        disabledDate={(currentDate) =>
+                            currentDate && currentDate < dayjs(eventStart).endOf("day")
+                        }
+                        value={eventEnd}
+                        onChange={setEventEnd}
+                        showTime
+                    />
                 </Form.Item>
             </Form>
         </Modal>

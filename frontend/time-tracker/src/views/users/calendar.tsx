@@ -37,6 +37,7 @@ const UserCalendarPage = () => {
             })),
         [schedules]
     );
+
     return (
         <LayoutPage>
             <MyCalendar
