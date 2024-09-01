@@ -11,10 +11,20 @@ public class SickLeaveQuery : ObjectGraphType
 {
     public SickLeaveQuery(ISickLeaveRepository sickLeaveRepository)
     {
-        Field<ListGraphType<SickLeaveType>>("sickLeaves")
-            .ResolveAsync(async resolve => await sickLeaveRepository.GetAll())
-            .AuthorizeWithPermissions(Permissions.ApproveSickLeavesAllMembers)
-            .Description("Get All Sick Leaves");
+        Field<EntitiesResultType<SickLeaveType>>("sickLeaves")
+            .Arguments(new QueryArguments(new QueryArgument<IntGraphType> { Name = "page" }))
+            .AuthorizeWithPermissions(Permissions.ApproveVacations)
+            .ResolveAsync(async context =>
+            {
+                var page = context.GetArgument<int?>("page") ?? 1;
+                var (vacations, totalPages) = await sickLeaveRepository.GetAll(page);
+                return new
+                {
+                    Entities = vacations,
+                    TotalPages = totalPages
+                };
+            })
+            .Description("Get All Sick Leaves by page");
         
         Field<SickLeaveType>("sickLeave")
             .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }))
@@ -46,16 +56,6 @@ public class SickLeaveQuery : ObjectGraphType
                 return await sickLeaveRepository.GetUserSickLeaves(userId);
             }).Description("Get All Sick Leaves of given User");
         
-        Field<ListGraphType<SickLeaveType>>("sickLeavesByPage")
-            .Arguments(new QueryArguments(
-                new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "pageNumber" },
-                new QueryArgument<IntGraphType> { Name = "pageSize", DefaultValue = 20 }))
-            .ResolveAsync(async context =>
-            {
-                var pageNumber = context.GetArgument<int>("pageNumber");
-                var pageSize = context.GetArgument<int>("pageSize");
-                return await sickLeaveRepository.GetSickLeavesByPage(pageNumber, pageSize);
-            }).Description("Get Sick Leaves by page number and page size");
         
         Field<SickLeaveType>("lastUserSickLeave")
             .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "userId" }))

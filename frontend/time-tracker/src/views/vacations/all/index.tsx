@@ -1,4 +1,3 @@
-// src/views/vacations/all/index.tsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Pagination } from 'antd';
@@ -10,28 +9,28 @@ import VacationFilter from "../../../components/off-works/VacationsFilter.tsx";
 const AllVacationsPage: React.FC = () => {
     const dispatch = useDispatch();
     const vacations = useSelector((state: RootState) => state.vacations.vacations);
+    const totalPages = useSelector((state: RootState) => state.vacations.totalPages);
     const [currentPage, setCurrentPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const currentUser = useSelector((state: RootState) => state.auth.user);
 
     useEffect(() => {
-        dispatch({ type: 'GET_ALL_VACATIONS' });
-    }, [dispatch, currentUser]);
+        dispatch({ type: 'GET_ALL_VACATIONS', payload: { page: currentPage } });
+    }, [dispatch, currentPage, currentUser]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
     const handleStatusChange = (value: string) => {
-        setStatusFilter(value === 'all' ? null : value);
-        setCurrentPage(1); // Reset to first page on filter change
+        const status = value === 'all' ? null : value;
+        setStatusFilter(status);
+        setCurrentPage(1);
     };
 
     const filteredVacations = statusFilter
         ? vacations.filter(vacation => vacation.status === statusFilter)
         : vacations;
-
-    const paginatedVacations = filteredVacations.slice((currentPage - 1) * 10, currentPage * 10);
 
     return (
         <LayoutPage>
@@ -42,14 +41,14 @@ const AllVacationsPage: React.FC = () => {
                 <VacationFilter onFilterChange={handleStatusChange} />
             </Row>
             <div>
-                {paginatedVacations.map(vacation => (
+                {filteredVacations.map(vacation => (
                     <VacationItem key={vacation.id} vacation={vacation} />
                 ))}
             </div>
             <Row justify="center" style={{ marginTop: 20 }}>
                 <Pagination
                     current={currentPage}
-                    total={filteredVacations.length}
+                    total={totalPages * 10} // Assuming 10 items per page
                     pageSize={10}
                     onChange={handlePageChange}
                 />

@@ -42,13 +42,16 @@ public class VacationRepository : IVacationRepository
         return vacation.FirstOrDefault();
     }
     
-    public async Task<IEnumerable<Vacation>> GetAll()
+    public async  Task<(IEnumerable<Vacation> Entities, int PagesCount)> GetAll(int? page = 1)
     {
         using var dbConnection = _dataContext.CreateConnection();
         var permissionUtils = new PermissionUtils();
         const string sqlQuery = $"""
                                  SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId, u.* FROM Vacations
                                  LEFT JOIN Users u on u.Id = UserId
+                                 ORDER BY StartVacation DESC
+                                 OFFSET @Offset ROWS
+                                 FETCH NEXT @PageSize ROWS ONLY
                                  """;
         var vacations = await dbConnection.QueryAsync<Vacation, UserDto, Vacation>(sqlQuery, (vac, user) =>
         {
@@ -63,8 +66,10 @@ public class VacationRepository : IVacationRepository
                 Permissions = permissionUtils.DeserializePermissions(user.Permissions)
             };
             return vac;
-        }, splitOn:"UserId");
-        return vacations;
+        }, new { Offset = (page - 1) * Pages.ElementsOnPage, PageSize = Pages.ElementsOnPage }, splitOn:"UserId");
+        
+        var totalPages = await GetPageCount();
+        return (vacations, totalPages);
     }
 
     public async Task<Vacation> Create(Vacation obj)
@@ -148,32 +153,6 @@ public class VacationRepository : IVacationRepository
         return vacations.FirstOrDefault();
     }
     
-    public async Task<IEnumerable<Vacation>> GetVacationsByPage(int pageNumber, int pageSize)
-    {
-        using var dbConnection = _dataContext.CreateConnection();
-        const string sqlQuery = $"""
-                                 SELECT Vacations.Id, StartVacation, EndVacation, Status, UserId, u.* FROM Vacations
-                                 LEFT JOIN Users u on u.Id = UserId
-                                 ORDER BY StartVacation DESC
-                                 OFFSET @Offset ROWS
-                                 FETCH NEXT @PageSize ROWS ONLY
-                                 """;
-        var permissionUtils = new PermissionUtils();
-        var vacations = await dbConnection.QueryAsync<Vacation, UserDto, Vacation>(sqlQuery, (vac, user) =>
-        {
-            vac.User = new User
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                IsActive = user.IsActive,
-                Permissions = permissionUtils.DeserializePermissions(user.Permissions)
-            };
-            return vac;
-        }, new { Offset = (pageNumber - 1) * pageSize, PageSize = pageSize }, splitOn:"UserId");
-        return vacations;
-    }
 
     public async Task<Vacation> ApproveVacation(int vacationId)
     {
@@ -209,5 +188,25 @@ public class VacationRepository : IVacationRepository
                                  """;
         await dbConnection.ExecuteAsync(sqlQuery, new { Id = vacationId, Status = ApplicationStatuses.Cancelled });
         return await GetById(vacationId);
+    }
+    
+    private async Task<int> GetTotalRecords()
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        const string slqQuery = $"""
+                                 SELECT COUNT(*) FROM Vacations
+                                 """;
+
+        var totalCount = await dbConnection.QueryFirstAsync<int>(slqQuery);
+
+        return totalCount;
+    }
+    
+    private async Task<int> GetPageCount()
+    {
+        var totalRecords = await GetTotalRecords();
+        int totalPages = (int)Math.Ceiling(totalRecords / (double)Pages.ElementsOnPage);
+
+        return totalPages;
     }
 }

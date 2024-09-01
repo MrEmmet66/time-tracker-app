@@ -7,12 +7,14 @@ interface VacationsSlice {
     vacations: Vacation[];
     vacation: Vacation | null;
     error: string | null;
+    totalPages: number;
 }
 
 const initialState: VacationsSlice = {
     vacations: [],
     vacation: null,
     error: null,
+    totalPages: 1
 };
 
 const vacationsSlice  = createSlice({
@@ -47,21 +49,11 @@ const vacationsSlice  = createSlice({
             });
         },
         getAllVacationsSuccess: (state, action) => {
-            state.vacations = action.payload.vacations;
+            state.vacations = action.payload.vacations.entities;
+            state.totalPages = action.payload.vacations.totalPages
             state.error = null;
         },
         getAllVacationsError: (state, action) => {
-            state.error = action.payload;
-            notification.error({
-                message: 'Error',
-                description: state.error
-            });
-        },
-        getVacationsByPageSuccess: (state, action) => {
-            state.vacations = action.payload.vacations;
-            state.error = null;
-        },
-        getVacationsByPageError: (state, action) => {
             state.error = action.payload;
             notification.error({
                 message: 'Error',
@@ -103,8 +95,6 @@ export const {
     getUserVacationsError,
     getAllVacationsSuccess,
     getAllVacationsError,
-    getVacationsByPageSuccess,
-    getVacationsByPageError,
     approveVacationSuccess,
     rejectVacationSuccess,
     vacationActionError } = vacationsSlice.actions;

@@ -1,6 +1,4 @@
 import {BrowserRouter, Route, Routes} from "react-router-dom";
-
-import {PAGES} from "../../constants/pages.constants";
 import Index from "../../views/home";
 import LoginPage from "../../views/auth/";
 import ProfilePage from "../../views/profile";
