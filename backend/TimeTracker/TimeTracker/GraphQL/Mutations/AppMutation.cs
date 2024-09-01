@@ -4,7 +4,9 @@ namespace TimeTracker.GraphQL.Mutations;
 
 public class AppMutation : ObjectGraphType
 {
-    public AppMutation(UserMutation userMutation, TeamMutation teamMutation, WorkEntryMutation workEntryMutation, VacationMutation vacationMutation, SickLeaveMutation sickLeaveMutation)
+    public AppMutation(UserMutation userMutation, TeamMutation teamMutation, WorkEntryMutation workEntryMutation,
+    VacationMutation vacationMutation, SickLeaveMutation sickLeaveMutation,
+    ScheduleMutation scheduleMutation)
     {
         AddField(userMutation.GetField("createUser"));
         AddField(userMutation.GetField("setUserStatus"));
@@ -16,7 +18,7 @@ public class AppMutation : ObjectGraphType
         AddField(teamMutation.GetField("createTeam"));
         AddField(teamMutation.GetField("addUserToTeam"));
         AddField(teamMutation.GetField("removeUserFromTeam"));
-        
+
         AddField(workEntryMutation.GetField("createWorkEntry"));
 
         AddField(vacationMutation.GetField("setVacation"));
@@ -25,7 +27,7 @@ public class AppMutation : ObjectGraphType
         AddField(vacationMutation.GetField("rejectVacation"));
         AddField(vacationMutation.GetField("cancelVacation"));
         AddField(vacationMutation.GetField("createVacationApplication"));
-        
+
         AddField(sickLeaveMutation.GetField("setSickLeave"));
         AddField(sickLeaveMutation.GetField("removeSickLeave"));
         AddField(sickLeaveMutation.GetField("approveSickLeave"));
@@ -33,5 +35,9 @@ public class AppMutation : ObjectGraphType
         AddField(sickLeaveMutation.GetField("cancelSickLeave"));
         AddField(sickLeaveMutation.GetField("createSickLeaveApplication"));
 
+
+        AddField(scheduleMutation.GetField("createScheduleItem"));
+        AddField(scheduleMutation.GetField("updateScheduleItem"));
+        AddField(scheduleMutation.GetField("deleteScheduleItem"));
     }
 }

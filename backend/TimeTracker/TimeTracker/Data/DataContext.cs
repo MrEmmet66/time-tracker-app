@@ -117,6 +117,21 @@ public class DataContext
                     CONSTRAINT FK_WorkEntries_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
                 );
 
+                IF OBJECT_ID('Schedules', 'U') IS NULL
+                CREATE TABLE Schedules
+                (
+                    Id          INT      NOT NULL IDENTITY(1,1),
+                    Title       TEXT     NOT NULL,
+                    Description TEXT,
+                    EventStart  DATETIMEOFFSET(2) NOT NULL,
+                    EventEnd    DATETIMEOFFSET(2) NOT NULL,
+                    UserId      INT      NOT NULL,
+                    CONSTRAINT PK_Schedules
+                        PRIMARY KEY (Id),
+                    CONSTRAINT FK_Schedules_Users
+                        FOREIGN KEY (UserId) REFERENCES Users
+                );
+
                 IF NOT EXISTS (
                     SELECT * 
                     FROM INFORMATION_SCHEMA.COLUMNS 

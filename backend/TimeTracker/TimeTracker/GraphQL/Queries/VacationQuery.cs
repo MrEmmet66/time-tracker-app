@@ -11,10 +11,20 @@ public class VacationQuery : ObjectGraphType
 {
     public VacationQuery(IVacationRepository vacationRepository)
     {
-        Field<ListGraphType<VacationType>>("vacations")
+        Field<EntitiesResultType<VacationType>>("vacations")
+            .Arguments(new QueryArguments(new QueryArgument<IntGraphType> { Name = "page" }))
             .AuthorizeWithPermissions(Permissions.ApproveVacations)
-            .ResolveAsync(async context => await vacationRepository.GetAll())
-            .Description("Get All Vacations");
+            .ResolveAsync(async context =>
+            {
+                var page = context.GetArgument<int?>("page") ?? 1;
+                var (vacations, totalPages) = await vacationRepository.GetAll(page);
+                return new
+                {
+                    Entities = vacations,
+                    TotalPages = totalPages
+                };
+            })
+            .Description("Get All Vacations by page");
         
         Field<VacationType>("vacation")
             .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }))
@@ -46,19 +56,6 @@ public class VacationQuery : ObjectGraphType
                 var userId = context.GetArgument<int>("userId");
                 return await vacationRepository.GetUserVacations(userId);
             }).Description("Get All Vacations of given User");
-        
-        Field<ListGraphType<VacationType>>("vacationsByPage")
-            .Arguments(new QueryArguments(
-                new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "pageNumber" },
-                new QueryArgument<IntGraphType> { Name = "pageSize", DefaultValue = 20 }))
-            .ResolveAsync(async context =>
-            {
-                var pageNumber = context.GetArgument<int>("pageNumber");
-                var pageSize = context.GetArgument<int>("pageSize");
-                return await vacationRepository.GetVacationsByPage(pageNumber, pageSize);
-            }).Description("Get Vacations by page number and page size");
-
-        
         
         Field<VacationType>("lastUserVacation")
             .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "userId" }))

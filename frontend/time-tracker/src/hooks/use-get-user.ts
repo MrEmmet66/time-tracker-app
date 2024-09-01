@@ -29,7 +29,7 @@ const useGetUser = () => {
     }, []);
 
     useEffect(() => {
-        if (!useState) {
+        if (!userState) {
             setUser(null);
             return;
         }

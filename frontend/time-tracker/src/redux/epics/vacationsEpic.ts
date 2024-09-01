@@ -69,54 +69,34 @@ const userVacations = (action$: Observable<any>) =>
 const allVacations = (action$: Observable<any>) =>
     action$.pipe(
         ofType("GET_ALL_VACATIONS"),
-        switchMap(() =>
+        switchMap((action) =>
         fetchGraphQl({
-            query: `query {
-              vacations {
-                id
-                startVacation
-                endVacation
-                status
-                user {
-                  id
-                  firstName
-                  lastName
-                }
-              }
-            }`
+            query: `query GetVacations($page:Int!) {
+                  vacations(page:$page) {
+                    totalPages
+                    
+                    entities {
+                      id
+                      status
+                      startVacation
+                      endVacation
+                      user {
+                        firstName
+                        lastName
+                        id
+                      }
+                    }
+                  }
+                }`,
+            variables: {
+                page: action.payload.page
+            }
         }))
     ).pipe(
         map((response) => getAllVacationsSuccess(response.data)),
         catchError((error) => of(getAllVacationsError(error.message))
     ));
 
-
-const vacationsByPage = (action$: Observable<any>) =>
-    action$.pipe(
-        ofType('GET_VACATIONS_BY_PAGE'),
-        switchMap((action) =>
-            fetchGraphQl({
-                query: `query GetVacationsPaged($pageNumber:Int!) {
-                  vacationsByPage(pageNumber:$pageNumber pageSize:$pageSize) {
-                    id
-                    status
-                    startVacation
-                    endVacation
-                    user {
-                      id
-                      firstName
-                      lastName
-                    }
-                  }
-                }`,
-                variables: {
-                    pageNumber: action.payload.pageNumber,
-                }
-            })
-        )
-    ).pipe(
-        map((response) => getVacationsByPageSuccess(response.data)),
-        catchError((error) => of(getVacationsByPageError(error.message))))
 
 const approveVacation = (action$: Observable<any>) =>
     action$.pipe(
@@ -165,7 +145,6 @@ export default combineEpics(
     createVacationApplication,
     userVacations,
     allVacations,
-    vacationsByPage,
     approveVacation,
     rejectVacation,
 );

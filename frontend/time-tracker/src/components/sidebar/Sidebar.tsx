@@ -1,5 +1,5 @@
 import {useMemo} from "react";
-import {UserOutlined, HomeOutlined, TeamOutlined} from "@ant-design/icons";
+import {UserOutlined, HomeOutlined, TeamOutlined, CalendarOutlined} from "@ant-design/icons";
 import {Layout, Menu} from "antd";
 import {Link, useLocation} from "react-router-dom";
 
@@ -15,6 +15,11 @@ const allMenuItems = [
         key: PAGES.HOME,
         icon: <HomeOutlined/>,
         label: <Link to={PAGES.HOME}>Home</Link>,
+    },
+    {
+        key: PAGES.CALENDAR,
+        icon: <CalendarOutlined />,
+        label: <Link to={PAGES.CALENDAR}>My Calendar</Link>,
     },
     {
         key: PAGES.USERS,
