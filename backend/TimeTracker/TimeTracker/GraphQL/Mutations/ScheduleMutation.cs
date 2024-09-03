@@ -1,6 +1,7 @@
 using System.Security.Authentication;
 using GraphQL;
 using GraphQL.Types;
+using TimeTracker.Constants;
 using TimeTracker.Extensions;
 using TimeTracker.GraphQL.Types;
 using TimeTracker.Models;
@@ -26,10 +27,22 @@ public class ScheduleMutation : ObjectGraphType
                 var eventStart = context.GetArgument<DateTimeOffset>("eventStart");
                 var eventEnd = context.GetArgument<DateTimeOffset>("eventEnd");
                 var user = context.UserContext["User"] as User;
-                
+
                 if (user == null)
                 {
-                    throw new AuthenticationException("");
+                    throw new AuthenticationException("Unauthorized");
+                }
+
+                if (eventEnd < eventStart)
+                {
+                    throw new Exception("The end date of the event cannot be earlier than the start date");
+                }
+
+                var maxDeadlineEvent = eventStart + new TimeSpan(8, 0, 0);
+                
+                if (eventEnd > maxDeadlineEvent)
+                {
+                    throw new Exception("The event cannot last more than 8 hours");
                 }
 
                 var scheduleItem = new ScheduleItem()
@@ -40,12 +53,31 @@ public class ScheduleMutation : ObjectGraphType
                     EventEnd = eventEnd,
                     User = user
                 };
+                
+                bool isOverlap = await repository.IsEventOverlap(user.Id, eventStart, eventEnd, -1);
+
+                if (isOverlap)
+                {
+                    throw new Exception("There is already an event in this period of time");
+                }
+                
+                var (totalHours, totalMinutes) = await repository.GetTotalTimeByDate(user.Id, eventStart);
+                var eventDuration = (eventEnd - eventStart);
+                var newTotalWorkingTimeDay = new TimeSpan(totalHours, totalMinutes, 0) + eventDuration;
+
+                if (newTotalWorkingTimeDay.Hours > WorkSchedules.MaxWorkHoursPerDay ||
+                    newTotalWorkingTimeDay.Hours >= WorkSchedules.MaxWorkHoursPerDay &&
+                    newTotalWorkingTimeDay.Minutes > 0)
+                {
+                    throw new Exception("Your working hours will exceed 8 hours");
+                }
 
                 return await repository.Create(scheduleItem);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                context.Errors.Add(new ExecutionError(e.Message));
                 throw;
             }
         });
@@ -66,20 +98,51 @@ public class ScheduleMutation : ObjectGraphType
                 var eventStart = context.GetArgument<DateTimeOffset>("eventStart");
                 var eventEnd = context.GetArgument<DateTimeOffset>("eventEnd");
                 var user = context.UserContext["User"] as User;
-                
+
                 if (user == null)
                 {
-                    throw new AuthenticationException("");
+                    throw new AuthenticationException("Unauthorized");
                 }
-
-                var item = await repository.GetById(user.Id);
-
-                if (item.User.Id != user.Id)
+                
+                if (eventEnd < eventStart)
                 {
-                    throw new Exception("");
+                    throw new Exception("The end date of the event cannot be earlier than the start date");
+                }
+                
+                var maxDeadlineEvent = eventStart + new TimeSpan(8, 0, 0);
+                
+                if (eventEnd > maxDeadlineEvent)
+                {
+                    throw new Exception("The event cannot last more than 8 hours");
                 }
 
-                var scheduleItem = new ScheduleItem()
+                var scheduleItem = await repository.GetById(id);
+
+                if (scheduleItem.User.Id != user.Id)
+                {
+                    throw new Exception("Forbidden");
+                }
+                
+                bool isOverlap = await repository.IsEventOverlap(user.Id, eventStart, eventEnd, id);
+
+                if (isOverlap)
+                {
+                    throw new Exception("There is already an event in this period of time");
+                }
+
+                var (hours, minutes) = await repository.GetTotalTimeByDate(user.Id, eventStart);
+                var durationEventsDay = scheduleItem.EventEnd - scheduleItem.EventStart;
+                var totalDuration = new TimeSpan(hours, minutes, 0) - durationEventsDay;
+                var durationEvent = (eventEnd - eventStart);
+                var newTotalTimeDay = totalDuration + durationEvent;
+
+                if (newTotalTimeDay.Hours > WorkSchedules.MaxWorkHoursPerDay ||
+                    newTotalTimeDay.Hours >= WorkSchedules.MaxWorkHoursPerDay && newTotalTimeDay.Minutes > 0)
+                {
+                    throw new Exception("Your working hours will exceed 8 hours");
+                }
+
+                var newScheduleItem = new ScheduleItem()
                 {
                     Id = id,
                     Title = title,
@@ -88,15 +151,16 @@ public class ScheduleMutation : ObjectGraphType
                     EventEnd = eventEnd,
                 };
 
-                return await repository.Update(scheduleItem);
+                return await repository.Update(newScheduleItem);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                context.Errors.Add(new ExecutionError(e.Message));
                 throw;
             }
         });
-        
+
         Field<ScheduleItemType>("deleteScheduleItem").Arguments(new QueryArguments(
             new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }
         )).ResolveAsync(async context =>
@@ -105,17 +169,17 @@ public class ScheduleMutation : ObjectGraphType
             {
                 var id = context.GetArgument<int>("id");
                 var user = context.UserContext["User"] as User;
-                
+
                 if (user == null)
                 {
-                    throw new AuthenticationException("");
+                    throw new AuthenticationException("Unauthorized");
                 }
 
                 var item = await repository.GetById(user.Id);
 
                 if (item.User.Id != user.Id)
                 {
-                    throw new Exception("");
+                    throw new Exception("Forbidden");
                 }
 
                 return await repository.DeleteById(id);
@@ -123,6 +187,7 @@ public class ScheduleMutation : ObjectGraphType
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                context.Errors.Add(new ExecutionError(e.Message));
                 throw;
             }
         });
