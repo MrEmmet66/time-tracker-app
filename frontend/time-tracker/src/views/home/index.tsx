@@ -11,6 +11,7 @@ import {PAGES} from "../../constants/pages.constants.ts";
 import {jwtDecode} from "jwt-decode";
 import {getToken} from "../../utils/token.ts";
 import WorkEntriesTable from "../../components/work-entries/WorkEntriesTable.tsx";
+import WorkEntriesDateFilter from "../../components/work-entries/WorkEntriesDateFilter.tsx";
 
 function Index() {
     const [date, setDate] = useState<Dayjs | null>(null);
@@ -50,6 +51,23 @@ function Index() {
         }
     }, [user, date]);
 
+    const handleFilterDateSubmit = (beginDate, stopDate) => {
+        if(beginDate && stopDate) {
+            dispatch({
+                type: "GET_WORK_ENTRIES_BY_DATE",
+                payload: { startDate: beginDate.format("YYYY-MM-DD"),
+                    endDate: stopDate.format("YYYY-MM-DD"),
+                    userId: user.id}
+            });
+        }
+        else {
+            dispatch({
+                type: "GET_WORK_ENTRIES_BY_USER_ID",
+                payload: {userId: user.id},
+            });
+        }
+    }
+
     console.log({user, workEntries, error, totalPages});
 
     return (
@@ -58,9 +76,7 @@ function Index() {
                 <div className="w-fit mx-auto">
                     <Timer/>
                 </div>
-                <div className="my-10">
-                    <DatePicker size="middle" onChange={setDate}/>
-                </div>
+                <WorkEntriesDateFilter onDateSelect={handleFilterDateSubmit}/>
                 <div className="mt-10 mb-5 space-y-4">
                     {workEntries && user && (
                         <WorkEntriesTable

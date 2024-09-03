@@ -154,30 +154,30 @@ public class WorkEntryRepository : IWorkEntryRepository
         return (workEntries, totalPages);
     }
 
-    public async Task<IEnumerable<WorkEntry>> GetByDate(DateTime date)
+    public async Task<IEnumerable<WorkEntry>> GetByDate(DateTime startDate, DateTime endDate)
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
                                  SELECT * FROM WorkEntries
-                                 WHERE CAST(StartDateTime AS DATE)=CAST(@Date AS DATE)
+                                 WHERE StartDateTime BETWEEN @StartDate AND @EndDate
                                  ORDER BY StartDateTime DESC
                                  """;
 
-        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { Date = date });
+        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { StartDate = startDate, EndDate = endDate });
 
         return workEntries;
     }
 
-    public async Task<IEnumerable<WorkEntry>> GetByDate(DateTime date, int userId)
+    public async Task<IEnumerable<WorkEntry>> GetByDate(DateTime startDate, DateTime endDate, int userId)
     {
         var dbConnection = _dataContext.CreateConnection();
         const string sqlQuery = $"""
                                  SELECT * FROM WorkEntries
-                                 WHERE CAST(StartDateTime AS DATE)=CAST(@Date AS DATE) AND UserId=@UserId
+                                 WHERE StartDateTime BETWEEN @StartDate AND @EndDate AND UserId=@UserId
                                  ORDER BY StartDateTime DESC
                                  """;
 
-        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { Date = date, UserId = userId });
+        var workEntries = await dbConnection.QueryAsync<WorkEntry>(sqlQuery, new { StartDate = startDate, EndDate = endDate, UserId = userId });
 
         return workEntries;
     }
