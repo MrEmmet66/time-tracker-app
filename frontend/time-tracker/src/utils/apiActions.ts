@@ -20,7 +20,7 @@ export const fetchGraphQl = async (body: {
         | IWorkEntryCreate
         | ITeamCreate
         | { userId: number, teamId?: number }
-        | { date: string; userId?: number }
+        | { startDate: string, endDate: string; userId?: number }
         | { password: string, newPassword: string }
         | { page: number }
         | { month: number | null }
