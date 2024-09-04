@@ -15,7 +15,11 @@ const ScheduleItemNew = ({isOpen, event, onCancel, onCreate}: IProps) => {
     const [title, setTitle] = useState<string>("");
     const [eventStart, setEventStart] = useState<dayjs.Dayjs>(dayjs(event.from));
     const [eventEnd, setEventEnd] = useState<dayjs.Dayjs>(dayjs(event.to));
+    const [differentEventTime, setDifferentEventTime] = useState(
+        eventEnd.diff(eventStart)
+    );
     const [form] = Form.useForm();
+    const maxDate = dayjs(eventStart).add(8, "hour");
 
     useEffect(() => {
         form.setFieldsValue({
@@ -24,6 +28,22 @@ const ScheduleItemNew = ({isOpen, event, onCancel, onCreate}: IProps) => {
             eventEnd: dayjs(event.to),
         });
     }, [event, form]);
+
+    useEffect(() => {
+        const newEventEnd = eventStart.add(differentEventTime, "milliseconds");
+        setEventEnd(newEventEnd);
+
+        const diffTime = eventEnd.diff(eventStart);
+        setDifferentEventTime(diffTime);
+        form.setFieldsValue({
+            eventEnd: dayjs(newEventEnd),
+        });
+    }, [eventStart]);
+
+    useEffect(() => {
+        const diffTime = eventEnd.diff(eventStart);
+        setDifferentEventTime(diffTime);
+    }, [eventEnd]);
 
     const handleOk = () => {
         form
@@ -61,7 +81,8 @@ const ScheduleItemNew = ({isOpen, event, onCancel, onCreate}: IProps) => {
                 >
                     <DatePicker
                         disabledDate={(currentDate) =>
-                            currentDate && currentDate < dayjs().startOf("day")}
+                            currentDate && currentDate < dayjs().startOf("day")
+                        }
                         value={eventStart}
                         onChange={setEventStart}
                         showTime
@@ -73,12 +94,62 @@ const ScheduleItemNew = ({isOpen, event, onCancel, onCreate}: IProps) => {
                     rules={[{required: true, message: "Please enter end event!"}]}
                 >
                     <DatePicker
-                        disabledDate={(currentDate) =>
-                            currentDate && currentDate < dayjs(eventStart).endOf("day")
-                        }
                         value={eventEnd}
                         onChange={setEventEnd}
                         showTime
+                        disabledDate={(currentDate) => {
+                            // Дозволяє вибір лише сьогоднішньої дати і завтрашньої дати
+                            const startOfToday = dayjs(eventStart).startOf("day");
+                            const endOfTomorrow = startOfToday.add(1, "day").endOf("day");
+
+                            return (
+                                currentDate &&
+                                (currentDate < startOfToday || currentDate > endOfTomorrow)
+                            );
+                        }}
+                        disabledTime={(current) => {
+                            if (!current) {
+                                return {
+                                    disabledHours: () => [],
+                                    disabledMinutes: () => [],
+                                    disabledSeconds: () => [],
+                                };
+                            }
+
+                            const startHour = dayjs(eventStart).hour();
+                            const maxHour = maxDate.hour();
+
+                            return {
+                                disabledHours: () => {
+                                    const hours = [];
+                                    for (let i = 0; i < 24; i++) {
+                                        if (i < startHour || i > maxHour) {
+                                            hours.push(i);
+                                        }
+                                    }
+                                    return hours;
+                                },
+                                disabledMinutes: (selectedHour) => {
+                                    const startMinute = dayjs(eventStart).minute();
+                                    const maxMinute = maxDate.minute();
+
+                                    if (selectedHour === startHour) {
+                                        return Array.from({length: 60}, (_, i) =>
+                                            i < startMinute ? i : null
+                                        ).filter((x) => x !== null);
+                                    }
+
+                                    if (selectedHour === maxHour) {
+                                        return Array.from({length: 60}, (_, i) =>
+                                            i > maxMinute ? i : null
+                                        ).filter((x) => x !== null);
+                                    }
+
+                                    return [];
+                                },
+                                disabledSeconds: () => [],
+                            };
+                        }}
                     />
                 </Form.Item>
             </Form>

@@ -144,9 +144,44 @@ public class ScheduleRepository : IScheduleRepository
         return schedulesItem;
     }
 
-    public Task<ScheduleItem> GetByUserId(int userId)
+    public async Task<(int Hours, int Minutes)> GetTotalTimeByDate(int userId, DateTimeOffset date)
     {
-        throw new NotImplementedException();
+        var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 SELECT SUM(DATEDIFF(MINUTE, EventStart, EventEnd)) AS TotalMinutes
+                                 FROM Schedules
+                                 WHERE UserId=@UserId AND CONVERT(DATE, EventStart) = @Date
+                                 """;
+
+        var totalMinutes =
+            await dbConnection.ExecuteScalarAsync<int>(sqlQuery, new { UserId = userId, Date = date.Date });
+        int hours = totalMinutes / 60;
+        int minutes = totalMinutes % 60;
+
+        return (hours, minutes);
+    }
+
+    public async Task<bool> IsEventOverlap(int userId, DateTimeOffset eventStart, DateTimeOffset eventEnd, int id)
+    {
+        var dbConnection = _dataContext.CreateConnection();
+        const string sqlQuery = $"""
+                                 SELECT COUNT(1)
+                                 FROM Schedules
+                                 WHERE UserId = @UserId
+                                 AND Id != @Id
+                                 AND (
+                                     (EventStart < @EventEnd AND EventEnd > @EventStart)
+                                     OR (EventStart >= @EventStart AND EventStart < @EventEnd)
+                                     OR (EventEnd > @EventStart AND EventEnd <= @EventEnd)
+                                     OR (EventStart <= @EventStart AND EventEnd >= @EventEnd)
+                                 )
+                                 """;
+        
+        var count = await dbConnection.ExecuteScalarAsync<int>(
+            sqlQuery,
+            new { Id = id, UserId = userId, EventStart = eventStart, EventEnd = eventEnd });
+
+        return count > 0;
     }
 
     public Task<(IEnumerable<ScheduleItem> Entities, int PagesCount)> GetAll(int? page)

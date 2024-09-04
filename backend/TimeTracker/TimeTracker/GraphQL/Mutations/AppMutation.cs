@@ -18,7 +18,7 @@ public class AppMutation : ObjectGraphType
         AddField(teamMutation.GetField("createTeam"));
         AddField(teamMutation.GetField("addUserToTeam"));
         AddField(teamMutation.GetField("removeUserFromTeam"));
-
+        
         AddField(workEntryMutation.GetField("createWorkEntry"));
 
         AddField(vacationMutation.GetField("setVacation"));

@@ -13,7 +13,7 @@ public class AppQuery : ObjectGraphType
 
         AddField(teamQuery.GetField("teams"));
         AddField(teamQuery.GetField("team"));
-
+        
         AddField(workEntryQuery.GetField("workEntries"));
         AddField(workEntryQuery.GetField("workEntry"));
         AddField(workEntryQuery.GetField("workEntriesByUserId"));

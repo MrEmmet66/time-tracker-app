@@ -7,7 +7,9 @@ import UserVacationsPage from "../../views/vacations";
 import AllVacationsPage from "../../views/vacations/all";
 import TeamsPage from "../../views/teams";
 import CalendarPage from "../../views/calendar";
+
 import {PAGES} from "../../constants/pages.constants.ts";
+
 import UserCalendarPage from "../../views/users/calendar";
 
 const Router = () => {
