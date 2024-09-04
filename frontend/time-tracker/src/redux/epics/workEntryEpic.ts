@@ -83,17 +83,18 @@ const getWorkEntriesByDate = (action$: Observable<any>) =>
     action$
         .pipe(
             ofType("GET_WORK_ENTRIES_BY_DATE"),
-            switchMap((action: { payload: { date: string, userId?: number } }) =>
+            switchMap((action: { payload: { startDate: string, endDate: string, userId?: number } }) =>
                 fetchGraphQl({
-                    query: `query WorkEntriesByDate ($date: Date! $userId: ID) {
-                  workEntriesByDate(date: $date, userId: $userId) {
-                    id
-                    startDateTime
-                    endDateTime
-                  }
-                }`,
+                    query: `query GetWorkEntriesByDateRange($startDate:Date! $endDate:Date!) {
+                          workEntriesByDate(startDate:$startDate endDate:$endDate) {
+                            id
+                            startDateTime
+                            endDateTime
+                          }
+                        }`,
                     variables: {
-                        date: action.payload.date,
+                        startDate: action.payload.startDate,
+                        endDate: action.payload.endDate,
                         userId: action.payload.userId,
                     },
                 })

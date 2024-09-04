@@ -80,22 +80,24 @@ public class WorkEntryQuery : ObjectGraphType
         Field<ListGraphType<WorkEntryType>>(
                 "workEntriesByDate"
             ).Arguments(new QueryArguments(
-                new QueryArgument<NonNullGraphType<DateGraphType>> { Name = "date" },
+                new QueryArgument<NonNullGraphType<DateGraphType>> { Name = "startDate" },
+                new QueryArgument<NonNullGraphType<DateGraphType>>{ Name = "endDate"},
                 new QueryArgument<IdGraphType> { Name = "userId" }))
             .ResolveAsync(
                 async context =>
                 {
                     try
                     {
-                        var date = context.GetArgument<DateTime>("date");
+                        var startDate = context.GetArgument<DateTime>("startDate");
+                        var endDate = context.GetArgument<DateTime>("endDate");
                         var userId = context.GetArgument<int?>("userId");
 
                         if (userId.HasValue)
                         {
-                            return await repository.GetByDate(date, userId.Value);
+                            return await repository.GetByDate(startDate, endDate, userId.Value);
                         }
 
-                        return await repository.GetByDate(date);
+                        return await repository.GetByDate(startDate, endDate);
                     }
                     catch (Exception ex)
                     {
