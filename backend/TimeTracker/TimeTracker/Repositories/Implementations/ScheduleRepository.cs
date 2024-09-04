@@ -183,7 +183,7 @@ public class ScheduleRepository : IScheduleRepository
 
         return count > 0;
     }
-    
+
     public Task<(IEnumerable<ScheduleItem> Entities, int PagesCount)> GetAll(int? page)
     {
         throw new NotImplementedException();

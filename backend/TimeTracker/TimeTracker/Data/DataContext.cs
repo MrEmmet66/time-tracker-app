@@ -78,6 +78,7 @@ public class DataContext
                     StartSickLeave DATETIME NOT NULL,
                     EndSickLeave DATETIME NOT NULL,
                     Reason TEXT,
+                    Status NVARCHAR(40) NOT NULL,
                     UserId INT NOT NULL,
                     CONSTRAINT PK_SickLeave PRIMARY KEY (Id),
                     CONSTRAINT FK_SickLeave_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
@@ -98,6 +99,7 @@ public class DataContext
                     Id INT NOT NULL IDENTITY(1,1),
                     StartVacation DATETIME NOT NULL,
                     EndVacation DATETIME NOT NULL,
+                    Status NVARCHAR(40) NOT NULL,
                     UserId INT NOT NULL,
                     CONSTRAINT PK_Vacations PRIMARY KEY (Id),
                     CONSTRAINT FK_Vacations_Users FOREIGN KEY (UserId) REFERENCES Users(Id)

@@ -7,4 +7,5 @@ public class SickLeave
     public DateTime StartSickLeave { get; set; }
     public DateTime EndSickLeave { get; set; }
     public string Reason { get; set; }
+    public string Status { get; set; }
 }

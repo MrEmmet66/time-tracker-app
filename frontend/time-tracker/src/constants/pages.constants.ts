@@ -5,6 +5,8 @@ export const enum PAGES {
     PROFILE = "/profile",
     TEAMS = "/teams",
     USERS = "/users",
+	VACATIONS = "/vacations",
+	ALL_VACATIONS = "/vacations/all",
     USER_CALENDAR = "/users/:id/calendar"
 }
 
